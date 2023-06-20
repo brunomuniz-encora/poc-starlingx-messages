@@ -5,6 +5,25 @@
 >_NOTE_: At the end of the session of the central node (when interrupted),
 > a timeseries of the received data is generated.
 
+## Running as a Demo
+
+For a Demo, just do:
+
+```shell
+MODE=central ./src/app.py & \
+for i in {1..5}; do MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null & done; \
+sleep 5; \
+for i in {1..5}; do MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null & done; \
+sleep 5; \
+for i in {1..5}; do MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null & done; \
+sleep 5; \
+for i in {1..10}; do MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null & done; \
+sleep 5; \
+for i in {1..30}; do MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null & done; \
+sleep 5; \
+sudo kill $(ps -ef | grep app.py | awk '{print $2}')
+```
+
 ## Running locally
 
 Run the central with:
@@ -16,7 +35,7 @@ MODE=central ./src/app.py
 Run any number of nodes with something like:
 
 ```shell
-MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null &
+for i in {1..2}; do MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null & done
 ```
 
 Visit [localhost:8000](localhost:8000) on your browser to see 

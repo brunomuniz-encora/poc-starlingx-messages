@@ -107,7 +107,6 @@ class CentralHTTPRequestHandler(BaseHTTPRequestHandler):
         self.mem.accumulator.append(thing_from)
         for a in self.mem.accumulator:
             self.mem.nodes.add(f'{a[1]} ({a[2]})')
-        print(len(self.mem.accumulator))
 
         response = {'message': 'Received POST data successfully',
                     'data': json_data}
