@@ -24,7 +24,7 @@ for i in {1..10}; do MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null & 
 sleep 5; \
 for i in {1..30}; do MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null & done; \
 sleep 5; \
-sudo kill $(ps -ef | grep app.py | awk '{print $2}')
+kill $(ps -ef | grep app.py | awk '{print $2}')
 ```
 
 ## Running locally
