@@ -10,6 +10,9 @@
 For a Demo, just do:
 
 ```shell
+python3 -m venv venv; \
+source venv/bin/activate; \
+pip install -r requirements/requirements.txt; \
 MODE=central ./src/app.py & \
 for i in {1..5}; do MODE=node SERVER=127.0.0.1:8000 ./src/app.py &>/dev/null & done; \
 sleep 5; \
