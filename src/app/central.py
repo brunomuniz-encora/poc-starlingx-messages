@@ -3,6 +3,7 @@ Central server functions
 """
 
 import json
+import os
 import signal
 import sys
 import threading
@@ -45,7 +46,7 @@ class DefaultCentralRequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        html = generate_html(self.mem)
+        html = self.generate_html(self.mem)
         self.wfile.write(bytearray(html, encoding='utf-8'))
 
     def do_POST(self):
@@ -102,7 +103,8 @@ def run_central_server(server_class=HTTPServer,
         plt.xticks([])  # Hide the x-axis labels
 
         plt.tight_layout()
-        plt.savefig('timeseries.png')
+        os.mkdir("output")
+        plt.savefig('output/timeseries.png')
 
     def threaded_handler(sg, frame):
         print(f'Received signal {sg} and frame {frame}')

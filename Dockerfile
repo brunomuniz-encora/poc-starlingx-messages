@@ -13,6 +13,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code into the container
 COPY ./src/* .
 
+# Set PYTHONPATH - not sure why I can only set the root
+ENV PYTHONPATH "/app"
+
 # Specify the command to run when the container starts
-CMD ["python", "/app/app.py"]
+CMD ["/app/main.py"]
 

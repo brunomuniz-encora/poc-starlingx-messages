@@ -7,15 +7,13 @@ import time
 from datetime import datetime
 
 import requests
-
-from src.app.utils import random_word, random_number
+import utils
 
 
 def send_post_request(url, data):
     headers = {'Content-type': 'application/json'}
     json_data = json.dumps(data)
 
-    response = ""
     try:
         response = requests.post(url, data=json_data, headers=headers)
         if response.status_code == 204:
@@ -27,8 +25,8 @@ def send_post_request(url, data):
 
 
 def run_distributed_node(central_url):
-    node_id = random_word(5)
-    number = random_number(100)
+    node_id = utils.random_word(5)
+    number = utils.random_number(100)
     while True:
         data = {
             "when": datetime.now().timestamp(),
