@@ -88,3 +88,37 @@ docker run --network host -v /tmp/timeseries:/app/output \
 -e MODE=node -e SERVER=127.0.0.1:8000 \
 -it --rm poc-starlingx
 ```
+
+## Helm
+
+To build the chart:
+
+```shell
+cd helm-chart/charts
+helm package ../../helm-chart/
+```
+
+To run the `central`, create the following file:
+
+```shell
+cat <<EOF > central.yaml
+env:
+  - name: MODE
+    value: central
+  - name: SERVER
+    value:
+
+image:
+  repository: 192.168.0.13:5000/poc-starlingx
+
+fullNameOverride: poc-starlingx-central
+EOF
+```
+
+Then run:
+
+```shell
+helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f central.yaml
+```
+
+TODO: Run the node.
