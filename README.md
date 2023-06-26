@@ -1,6 +1,6 @@
 # The very simple PoC of an app that sends message to a server
 
-- [ ] Generate timeseries on demand
+- [X] Generate timeseries on demand
 - [ ] Node ID should be assigned be server
 - [ ] Add some sort of simple retry logic for offline nodes
 

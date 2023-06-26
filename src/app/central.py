@@ -1,15 +1,17 @@
 """
 Central server functions
 """
-
+import io
 import json
 import os
+import shutil
 import signal
 import sys
 import threading
 
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -43,11 +45,25 @@ class DefaultCentralRequestHandler(BaseHTTPRequestHandler):
     mem = ServerInfo()
 
     def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-        html = self.generate_html(self.mem)
-        self.wfile.write(bytearray(html, encoding='utf-8'))
+        parsed_url = urlparse(self.path)
+        path = parsed_url.path
+
+        if path == '/download':
+            self.send_response(200)
+            self.send_header('Content-type', 'image/png')
+            self.send_header('Content-Disposition',
+                             'attachment; filename="timeseries.png"')
+            self.end_headers()
+            path = generate_chart(self.mem)
+
+            with open(path, 'rb') as file:
+                self.wfile.write(file.read())
+        else:
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            html = self.generate_html(self.mem)
+            self.wfile.write(bytearray(html, encoding='utf-8'))
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
@@ -72,39 +88,46 @@ class DefaultCentralRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response).encode('utf-8'))
 
 
+def generate_chart(server_data):
+    for a in server_data.accumulator:
+        server_data.nodes.add(a[1])
+
+    fig, ax = plt.subplots()
+
+    for node in server_data.nodes:
+        # Filter the events based on the value
+        filtered_events = [event for event in server_data.accumulator if event[1] == node]
+
+        # Extract the datetimes and data points for the filtered events
+        datetimes = [datetime.fromtimestamp(event[0]) for
+                     event in filtered_events]
+        data_points = [event[2] for event in filtered_events]
+
+        # Plot the line for the current value
+        ax.plot(datetimes, data_points, label=f'Node: {node}')
+
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+
+    plt.xlabel('Time')
+    plt.title('Events Timeseries Chart')
+    plt.xticks([])  # Hide the x-axis labels
+
+    plt.tight_layout()
+
+    output_dir = 'output'
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+    os.makedirs(output_dir)
+    full_path = f'{output_dir}/timeseries.png'
+    plt.savefig(full_path)
+    return full_path
+
+
 def run_central_server(server_class=HTTPServer,
                        handler_class=DefaultCentralRequestHandler, port=8000):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-
-    def generate_chart(server_data):
-        for a in server_data.accumulator:
-            server_data.nodes.add(a[1])
-
-        fig, ax = plt.subplots()
-
-        for node in server_data.nodes:
-            # Filter the events based on the value
-            filtered_events = [event for event in server_data.accumulator if event[1] == node]
-
-            # Extract the datetimes and data points for the filtered events
-            datetimes = [datetime.fromtimestamp(event[0]) for
-                         event in filtered_events]
-            data_points = [event[2] for event in filtered_events]
-
-            # Plot the line for the current value
-            ax.plot(datetimes, data_points, label=f'Node: {node}')
-
-        ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
-
-        plt.xlabel('Time')
-        plt.title('Events Timeseries Chart')
-        plt.xticks([])  # Hide the x-axis labels
-
-        plt.tight_layout()
-        os.mkdir("output")
-        plt.savefig('output/timeseries.png')
 
     def threaded_handler(sg, frame):
         print(f'Received signal {sg} and frame {frame}')
