@@ -3,6 +3,7 @@
 - [X] Generate timeseries on demand
 - [ ] Node ID should be assigned be server
 - [ ] Add some sort of simple retry logic for offline nodes
+- [ ] Remove built charts from the helm-charts
 
 >_NOTE_: At the end of the session of the central node (when interrupted),
 > a timeseries of the received data is generated.
@@ -15,6 +16,7 @@ For a Demo, just do:
 python3 -m venv venv; \
 source venv/bin/activate; \
 pip install -r requirements/requirements.txt; \
+export PYTHONPATH=$(pwd)/src:$(pwd)/src/app; \
 MODE=central ./src/main.py & \
 for i in {1..5}; do MODE=node SERVER=127.0.0.1:8000 ./src/main.py &>/dev/null & done; \
 sleep 5; \
@@ -50,7 +52,7 @@ Run the central with:
 
 ```shell
 MODE=central ./src/main.py
-```
+```  
 
 Run any number of nodes with something like:
 
