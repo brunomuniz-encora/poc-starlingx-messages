@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+from app import central, node
 
-import central, node
 
 def main():
     mode = os.getenv("MODE")

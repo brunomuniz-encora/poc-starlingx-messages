@@ -1,7 +1,7 @@
 """
 Central server functions
 """
-import io
+
 import json
 import os
 import shutil
@@ -70,18 +70,20 @@ class DefaultCentralRequestHandler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         json_data = json.loads(post_data)
 
-        self.send_response(204)
+        self.send_response_only(204)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
 
-        thing_from = [
-            json_data['when'],
-            json_data['who'],
-            json_data['how-much']
-        ]
-        self.mem.accumulator.append(thing_from)
-        for a in self.mem.accumulator:
-            self.mem.nodes.add(f'{a[1]} ({a[2]})')
+        version = json_data['version']
+        date_time = datetime.fromtimestamp(json_data['datetime'])
+        client_id = json_data['clientid']
+        client_ip = json_data['clientip']
+        threats = json_data['threats']
+
+        print(f"[{date_time} {client_ip}/{client_id} v{version}] " +
+              f"Threats amount {threats}%, an attack is happening in this node region")
+
+        self.mem.accumulator.append(threats)
 
         response = {'message': 'Received POST data successfully',
                     'data': json_data}
@@ -92,7 +94,7 @@ def generate_chart(server_data):
     for a in server_data.accumulator:
         server_data.nodes.add(a[1])
 
-    fig, ax = plt.subplots()
+    _, axes = plt.subplots()
 
     for node in server_data.nodes:
         # Filter the events based on the value
@@ -104,10 +106,10 @@ def generate_chart(server_data):
         data_points = [event[2] for event in filtered_events]
 
         # Plot the line for the current value
-        ax.plot(datetimes, data_points, label=f'Node: {node}')
+        axes.plot(datetimes, data_points, label=f'Node: {node}')
 
-    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+    axes.xaxis.set_major_locator(mdates.AutoDateLocator())
+    axes.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
 
     plt.xlabel('Time')
     plt.title('Events Timeseries Chart')
@@ -129,8 +131,8 @@ def run_central_server(server_class=HTTPServer,
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
 
-    def threaded_handler(sg, frame):
-        print(f'Received signal {sg} and frame {frame}')
+    def threaded_handler(income_signal, frame):
+        print(f'Received signal {income_signal} and frame {frame}')
 
         def signal_handler():
             print('Termination signal received. Performing cleanup...')

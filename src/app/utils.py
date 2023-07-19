@@ -1,5 +1,7 @@
 import random
 import string
+import socket
+import numpy as np
 
 
 def random_word(length):
@@ -7,5 +9,9 @@ def random_word(length):
     return ''.join(random.choice(letters) for i in range(length))
 
 
-def random_number(top):
-    return random.randint(1, top)
+def random_percentage_long_tail_distribution():
+    return int((1 - np.random.power(10)) * 100)
+
+
+def get_ip():
+    return socket.gethostbyname(socket.gethostname())
