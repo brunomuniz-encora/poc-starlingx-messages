@@ -1,4 +1,3 @@
 VERSION = '4.0.0'
-TO_CENTRAL_CLOUD_TRESHOLD = 15
 CENTRAL_CLOUD_IMAGE = 'compiledseries'
 NODE_IMAGE = 'timeseries'

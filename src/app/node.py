@@ -27,7 +27,7 @@ def send_post_request(url, data):
         print(f'Exception on request to {url}: {exception}')
 
 
-def generate_image_graph(circular_queue):
+def generate_image_graph(circular_queue, to_server_treshold):
     values = circular_queue.get_items()
     date_time = [value['datetime'] for value in values if value is not None]
     threats = [value['threats'] for value in values if value is not None]
@@ -35,7 +35,7 @@ def generate_image_graph(circular_queue):
     plt.plot(date_time, threats, color='blue')
     plt.xlabel('Date time (timestamp)')
     plt.ylabel('Threats percentage (%)')
-    plt.axhline(y=config.TO_CENTRAL_CLOUD_TRESHOLD,
+    plt.axhline(y=to_server_treshold,
                 color='r',
                 label='Above this line, notify Central Cloud')
     plt.legend()
@@ -51,7 +51,7 @@ def run_node_image_server(local_server_class, handler_class, port):
     httpd.serve_forever()
 
 
-def run_node_service(central_url):
+def run_node_service(central_url, to_server_treshold):
     client_id = utils.random_word(5)
     client_ip = utils.get_ip()
     circular_queue = CircularQueue(100)
@@ -69,9 +69,9 @@ def run_node_service(central_url):
             'threats': threats
         }
         circular_queue.enqueue(data)
-        generate_image_graph(circular_queue)
+        generate_image_graph(circular_queue, to_server_treshold)
 
-        if threats > config.TO_CENTRAL_CLOUD_TRESHOLD:
+        if threats > to_server_treshold:
             send_post_request(central_url, data)
 
         time.sleep(1)
@@ -80,10 +80,12 @@ def run_node_service(central_url):
 def run_distributed_node(central_url,
                          local_server_class=HTTPServer,
                          handler_class=RequestHandler,
-                         port=8001):
+                         port=8001,
+                         to_server_treshold = 20):
     image_server = multiprocessing.Process(target=run_node_image_server,
                                            args=(local_server_class, handler_class, port))
-    service = multiprocessing.Process(target=run_node_service, args=(central_url,))
+    service = multiprocessing.Process(target=run_node_service,
+                                      args=(central_url, to_server_treshold))
 
 
     image_server.start()

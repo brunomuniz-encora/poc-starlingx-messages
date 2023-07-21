@@ -7,7 +7,6 @@ import time
 import multiprocessing
 from datetime import datetime
 from http.server import HTTPServer
-from queue import Empty
 import matplotlib.pyplot as plt
 
 import config
