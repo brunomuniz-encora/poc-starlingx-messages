@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-from app import central, node
+import central
+import node
 
 
 def main():
@@ -9,8 +10,7 @@ def main():
     print("mode -> " + mode)
 
     if mode == "central":
-        central.run_central_server(
-            handler_class=central.DefaultCentralRequestHandler)
+        central.run_central_cloud()
     else:
         central_url = f'http://{os.getenv("SERVER")}'
         node.run_distributed_node(central_url)
