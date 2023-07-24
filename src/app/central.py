@@ -1,154 +1,91 @@
 """
 Central server functions
 """
-import io
+
 import json
-import os
-import shutil
-import signal
-import sys
-import threading
-
+import time
+import multiprocessing
 from datetime import datetime
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse
-
+from http.server import HTTPServer
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+
+import config
+from circularqueue import CircularQueue
+from httprequests import RequestHandler
 
 
-class DefaultCentralRequestHandler(BaseHTTPRequestHandler):
-
-    class ServerInfo:
-        accumulator = []
-        nodes = set()
-
-    def generate_html(self, server_data):
-        html = '''<html>
-          <head>
-            <title>HTML in 10 Simple Steps or Less</title>
-            <meta http-equiv="refresh" content="5"> <!-- See the difference? -->
-          </head>
-          <body>'''
-        html = f'{html}\n<b>TOTAL: {len(server_data.accumulator)}</b> <br>'
-
-        html = f'{html}\n<p><b>Nodes ({len(server_data.nodes)}): </b><br>'
-        for node in server_data.nodes:
-            html = f'{html} \n- {node}<br>'
-
-        html = (f'{html}'
-                f'  </body>'
-                f'</html>')
-
-        return html
-
-    mem = ServerInfo()
-
-    def do_GET(self):
-        parsed_url = urlparse(self.path)
-        path = parsed_url.path
-
-        if path == '/download':
-            self.send_response(200)
-            self.send_header('Content-type', 'image/png')
-            self.send_header('Content-Disposition',
-                             'attachment; filename="timeseries.png"')
-            self.end_headers()
-            path = generate_chart(self.mem)
-
-            with open(path, 'rb') as file:
-                self.wfile.write(file.read())
-        else:
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            html = self.generate_html(self.mem)
-            self.wfile.write(bytearray(html, encoding='utf-8'))
+class CentralRequestHandler(RequestHandler):
+    queue = multiprocessing.Queue()
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         json_data = json.loads(post_data)
 
-        self.send_response(204)
+        self.send_response_only(204)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
 
-        thing_from = [
-            json_data['when'],
-            json_data['who'],
-            json_data['how-much']
-        ]
-        self.mem.accumulator.append(thing_from)
-        for a in self.mem.accumulator:
-            self.mem.nodes.add(f'{a[1]} ({a[2]})')
+        version = json_data['version']
+        date_time = datetime.fromtimestamp(json_data['datetime'])
+        client_id = json_data['clientid']
+        client_ip = json_data['clientip']
+        threats = json_data['threats']
+
+        print(f"[{date_time} {client_ip}/{client_id} v{version}] " +
+              f"Threats amount {threats}%, an attack is happening in this node region")
+
+        self.queue.put(post_data)
 
         response = {'message': 'Received POST data successfully',
                     'data': json_data}
         self.wfile.write(json.dumps(response).encode('utf-8'))
 
 
-def generate_chart(server_data):
-    for a in server_data.accumulator:
-        server_data.nodes.add(a[1])
+def generate_image_graph_every_second(nodes_notification_queue):
+    circular_queue = CircularQueue(100)
 
-    fig, ax = plt.subplots()
+    while True:
+        #get the amount of nodes with warnings on the last second
+        warnings = nodes_notification_queue.qsize()
 
-    for node in server_data.nodes:
-        # Filter the events based on the value
-        filtered_events = [event for event in server_data.accumulator if event[1] == node]
+        #remove readed elements from queue
+        for _ in range(0, warnings):
+            nodes_notification_queue.get()
 
-        # Extract the datetimes and data points for the filtered events
-        datetimes = [datetime.fromtimestamp(event[0]) for
-                     event in filtered_events]
-        data_points = [event[2] for event in filtered_events]
+        data = {
+            'datetime': datetime.now().timestamp(),
+            'warningsamount': warnings
+        }
+        circular_queue.enqueue(data)
 
-        # Plot the line for the current value
-        ax.plot(datetimes, data_points, label=f'Node: {node}')
+        values = circular_queue.get_items()
+        date_time = [value['datetime'] for value in values if value is not None]
+        warnings_amount = [value['warningsamount'] for value in values if value is not None]
 
-    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+        plt.plot(date_time, warnings_amount, color='blue')
+        plt.xlabel('Date time (timestamp)')
+        plt.ylabel('Nodes with warnings')
+        plt.savefig(f'{config.CENTRAL_CLOUD_IMAGE}.png')
+        plt.clf()
 
-    plt.xlabel('Time')
-    plt.title('Events Timeseries Chart')
-    plt.xticks([])  # Hide the x-axis labels
-
-    plt.tight_layout()
-
-    output_dir = 'output'
-    if os.path.exists(output_dir):
-        shutil.rmtree(output_dir)
-    os.makedirs(output_dir)
-    full_path = f'{output_dir}/timeseries.png'
-    plt.savefig(full_path)
-    return full_path
+        time.sleep(1)
 
 
-def run_central_server(server_class=HTTPServer,
-                       handler_class=DefaultCentralRequestHandler, port=8000):
+def run_central_server(server_class, handler_class, port):
     server_address = ('', port)
+    handler_class.image_name = config.CENTRAL_CLOUD_IMAGE
     httpd = server_class(server_address, handler_class)
-
-    def threaded_handler(sg, frame):
-        print(f'Received signal {sg} and frame {frame}')
-
-        def signal_handler():
-            print('Termination signal received. Performing cleanup...')
-
-            # Add your cleanup code or additional tasks here
-            generate_chart(handler_class.mem)
-            print('Generated summary chart.')
-            # Shutdown the server
-            httpd.shutdown()
-            print('Shutdown successful.')
-            httpd.server_close()
-            print('Server gracefully shut down.')
-
-        signal_thread = threading.Thread(target=signal_handler, args=())
-        signal_thread.start()
-        sys.exit(0)
-
-    signal.signal(signal.SIGINT, threaded_handler)
-    signal.signal(signal.SIGTERM, threaded_handler)
     print(f'Starting HTTP listener on port {port}...')
     httpd.serve_forever()
+
+def run_central_cloud(server_class=HTTPServer,
+                      handler_class = CentralRequestHandler,
+                      port=8000):
+    central_server = multiprocessing.Process(target=run_central_server,
+                                           args=(server_class, handler_class, port))
+    image_service = multiprocessing.Process(target=generate_image_graph_every_second,
+                                            args=(handler_class.queue,))
+
+    central_server.start()
+    image_service.start()
