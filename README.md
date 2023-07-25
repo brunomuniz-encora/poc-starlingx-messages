@@ -3,7 +3,7 @@
 - [X] Generate timeseries on demand
 - [ ] Node ID should be assigned be server
 - [ ] Add some sort of simple retry logic for offline nodes
-- [ ] Remove built charts from the helm-charts
+- [X] Remove built charts from the helm-charts
 
 >_NOTE_: At the end of the session of the central node (when interrupted),
 > a timeseries of the received data is generated.
@@ -96,22 +96,23 @@ docker run --network host -v /tmp/timeseries:/app/output \
 To build the chart:
 
 ```shell
-cd helm-chart/charts
-helm package ../../helm-chart/
+mkdir charts
+cd charts
+helm package ../helm-chart/
 ```
 
-To run the `central`, create the following file:
+### To run the `central`
+
+Create the following file:
 
 ```shell
 cat <<EOF > central.yaml
 env:
   - name: MODE
     value: central
-  - name: SERVER
-    value:
 
 image:
-  repository: 192.168.0.13:5000/poc-starlingx
+  repository: <optional-registry-address>/poc-starlingx
 
 fullNameOverride: poc-starlingx-central
 EOF
@@ -123,4 +124,28 @@ Then run:
 helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f central.yaml
 ```
 
-TODO: Run the node.
+### To run a `node`
+
+Create the following file:
+
+```shell
+cat <<EOF > node.yaml
+env:
+  - name: MODE
+    value: node
+  - name: SERVER
+    value: <probably localhost:8000>
+
+image:
+  repository: <optional-registry-address>/poc-starlingx
+
+fullNameOverride: poc-starlingx-central
+EOF
+```
+
+Then run:
+
+```shell
+helm upgrade -i poc-starlingx-node poc-starlingx-0.4.0.tgz -f node.yaml
+```
+
