@@ -9,6 +9,6 @@ spec:
   ports:
   - port: 8000
     targetPort: 8000
-    nodePort: 31000
+    nodePort: {{ .Values.kube.port }}
   selector:
     app: {{ .Chart.Name }}

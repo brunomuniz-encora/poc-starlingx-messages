@@ -21,3 +21,5 @@ spec:
           {{- toYaml .Values.env | nindent 12 }}
         ports:
         - containerPort: 8000
+      imagePullSecrets:
+        - name: {{ .Values.kube.secret }}

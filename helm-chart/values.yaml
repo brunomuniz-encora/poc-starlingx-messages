@@ -11,3 +11,7 @@ env:
 image:
   repository: localhost:5000/poc-starlingx
   tag: latest
+
+kube:
+  port: 31234
+  secret: my-docker-reg-secret
