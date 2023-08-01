@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ .Values.kube.name }}
   labels:
-    app: {{ .Chart.Name }}
+    app: {{ .Values.kube.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.kube.replicas }}
   selector:
     matchLabels:
-      app: {{ .Chart.Name }}
+      app: {{ .Values.kube.name }}
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}
+        app: {{ .Values.kube.name }}
     spec:
       containers:
-      - name: {{ .Chart.Name }}
+      - name: {{ .Values.kube.name }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         env:
           {{- toYaml .Values.env | nindent 12 }}
         ports:
-        - containerPort: 8000
+        - containerPort: {{ .Values.image.containerPort }}
       imagePullSecrets:
         - name: {{ .Values.kube.secret }}
