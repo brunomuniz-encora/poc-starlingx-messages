@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 class RequestHandler(BaseHTTPRequestHandler):
     image_name = ''
+    dashboard_title = ''
 
     def do_GET(self):
         if os.path.isfile('.' + self.path) and self.path.endswith('png'):
@@ -26,11 +27,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             html +=  '<html>\n'
             html +=  '   <head>\n'
             html +=  '       <title>Dashboard</title>\n'
-            html +=  '       <meta http-equiv="refresh" content="1">\n'
+            html +=  '       <meta http-equiv="refresh" content="5">\n'
             html +=  '   </head>\n'
             html +=  '   <body>\n'
-            html +=  '       <h2>Threats percentage</h2>\n'
-            html += f'       <img src="{self.image_name}.png">\n'
+            html +=  f'       <h2 id="title">{self.dashboard_title}</h2>\n'
+            html += f'       <img id="graph" src="{self.image_name}.png">\n'
             html +=  '   </body>\n'
             html +=  '</html>\n'
 

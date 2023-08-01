@@ -75,6 +75,7 @@ def generate_image_graph_every_second(nodes_notification_queue):
 def run_central_server(server_class, handler_class, port):
     server_address = ('', port)
     handler_class.image_name = config.CENTRAL_CLOUD_IMAGE
+    handler_class.dashboard_title = 'Threat tracker'
     httpd = server_class(server_address, handler_class)
     print(f'Starting HTTP listener on port {port}...')
     httpd.serve_forever()

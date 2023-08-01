@@ -46,6 +46,7 @@ def generate_image_graph(circular_queue, to_server_treshold):
 def run_node_image_server(local_server_class, handler_class, port):
     local_server_address = ('', port)
     handler_class.image_name = config.NODE_IMAGE
+    handler_class.dashboard_title = 'Threats percentage'
     httpd = local_server_class(local_server_address, handler_class)
     print(f'Starting HTTP listener on port {port}...')
     httpd.serve_forever()
