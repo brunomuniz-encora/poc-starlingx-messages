@@ -1,7 +1,7 @@
 # The very simple PoC of an app that sends message to a server
 
 - [X] Generate timeseries on demand
-- [ ] Node ID should be assigned be server
+- [X] Central is able to receive past events from nodes and plot properly
 - [ ] Add some sort of simple retry logic for offline nodes
 - [X] Remove built charts from the helm-charts
 
@@ -17,7 +17,7 @@ python3 -m venv venv; \
 source venv/bin/activate; \
 pip install -r requirements/requirements.txt; \
 export PYTHONPATH=$(pwd)/src:$(pwd)/src/app; \
-MODE=central BUCKET=1 ./src/main.py & \
+MODE=central BUCKET_SIZE=5 ./src/main.py & \
 for i in $(seq 1 5); do MODE=node SERVER=127.0.0.1:8000 PORT=$((8000+$i)) ./src/main.py &>/dev/null & done; \
 sleep 5; \
 for i in $(seq 6 10); do MODE=node SERVER=127.0.0.1:8000 PORT=$((8000+$i)) ./src/main.py &>/dev/null & done; \

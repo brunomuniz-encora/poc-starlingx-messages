@@ -36,7 +36,7 @@ class NodeRequestHandler(BaseHTTPRequestHandler):
             html =   '<!DOCTYPE html>\n'
             html +=  '<html>\n'
             html +=  '   <head>\n'
-            html +=  '       <title>Dashboard</title>\n'
+            html +=  '       <title>Node Dashboard</title>\n'
             html +=  '       <meta http-equiv="refresh" content="5">\n'
             html +=  '   </head>\n'
             html +=  '   <body>\n'
@@ -94,7 +94,7 @@ def run_node_image_server(local_server_class, handler_class, port):
 
 
 def run_node_service(central_url, circular_queue=CircularQueue(100),
-                     to_server_threshold=20):
+                     to_server_threshold=20, scan_frequency=2):
     client_id = utils.random_word(5)
     client_ip = utils.get_ip()
 
@@ -115,13 +115,14 @@ def run_node_service(central_url, circular_queue=CircularQueue(100),
         if threats > to_server_threshold:
             send_post_request(central_url, data)
 
-        time.sleep(1)
+        time.sleep(scan_frequency)
 
 
 def run_distributed_node(central_url,
                          local_server_class=HTTPServer,
                          port=8001,
-                         to_server_threshold=20):
+                         to_server_threshold=20,
+                         scan_frequency=2):
 
     handler_class = NodeRequestHandler
     handler_class.circular_queue = CircularQueue(100)
@@ -131,7 +132,7 @@ def run_distributed_node(central_url,
                                     args=(local_server_class, handler_class, port))
     service = threading.Thread(target=run_node_service,
                                args=(central_url, handler_class.circular_queue,
-                                     to_server_threshold))
+                                     to_server_threshold, scan_frequency))
 
 
     image_server.start()

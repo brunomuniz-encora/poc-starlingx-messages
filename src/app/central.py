@@ -3,20 +3,21 @@ Central server functions
 """
 import io
 import json
+import math
 import multiprocessing
 import threading
 import time
+from collections import defaultdict
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import matplotlib.pyplot as plt
 
 import config
-from circularqueue import CircularQueue
 
 
 class CentralRequestHandler(BaseHTTPRequestHandler):
-    queue = multiprocessing.Queue()
-    circular_queue = CircularQueue(100)
+    events = multiprocessing.Queue()
+    circular_queue = defaultdict(int)
 
     def do_GET(self):
         if self.path.endswith(f'{config.CENTRAL_CLOUD_IMAGE}.png'):
@@ -35,7 +36,7 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
             html =   '<!DOCTYPE html>\n'
             html +=  '<html>\n'
             html +=  '   <head>\n'
-            html +=  '       <title>Dashboard</title>\n'
+            html +=  '       <title>Central Dashboard</title>\n'
             html +=  '       <meta http-equiv="refresh" content="5">\n'
             html +=  '   </head>\n'
             html +=  '   <body>\n'
@@ -67,7 +68,7 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
         print(f"[{date_time} {client_ip}/{client_id} v{version}] " +
               f"Threats amount {threats}%, an attack is happening in this node region")
 
-        self.queue.put(post_data)
+        self.events.put(post_data)
 
         response = {'message': 'Received POST data successfully',
                     'data': json_data}
@@ -75,13 +76,18 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
 
 
 def generate_image_graph(circular_queue):
-    values = circular_queue.get_items()
-    date_time = [value['datetime'] for value in values if value is not None]
-    warnings_amount = [value['warningsamount'] for value in values if value is not None]
+    values = circular_queue
+    date_time = [float(timestamp)
+                 for timestamp, _ in sorted(values.items(), key=lambda x: x[0])
+                 if timestamp is not None]
+    warnings_amount = [warnings
+                       for _, warnings
+                       in sorted(values.items(), key=lambda x: x[0])
+                       if warnings is not None]
 
     plt.plot(date_time, warnings_amount, color='blue')
     plt.xlabel('Date time (timestamp)')
-    plt.ylabel('Nodes with warnings')
+    plt.ylabel('Warnings')
 
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
@@ -93,20 +99,23 @@ def generate_image_graph(circular_queue):
     return image_buffer
 
 
-def aggregate_data(events, aggregate, bucket_size):
+def aggregate_data(events, circular_queue, bucket_size):
     while True:
+        print(f'Aggregating new data in buckets of {bucket_size}s')
         # Get the amount of nodes with warnings since last read
         warnings = events.qsize()
+        data = defaultdict(int)
 
         # Dequeue read elements
         for _ in range(0, warnings):
-            events.get()
+            event = json.loads(events.get())
+            aggregate_timestamp = math.floor(event["datetime"] / (
+                    bucket_size)) * bucket_size
+            data[aggregate_timestamp] += 1
 
-        data = {
-            'datetime': datetime.now().timestamp(),
-            'warningsamount': warnings
-        }
-        aggregate.enqueue(data)
+        for key, value in data.items():
+            circular_queue[int(key)] += int(value)
+
         time.sleep(bucket_size)
 
 
@@ -124,7 +133,7 @@ def run_central_cloud(server_class=HTTPServer,
     central_server = threading.Thread(target=run_central_server,
                                            args=(server_class, handler_class, port))
     aggregation_service = threading.Thread(target=aggregate_data,
-                                            args=(handler_class.queue,
+                                            args=(handler_class.events,
                                                   handler_class.circular_queue,
                                                   bucket_size))
 
