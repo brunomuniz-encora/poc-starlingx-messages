@@ -1,11 +1,11 @@
 """
 Distributed nodes functions
 """
-
+import io
 import json
+import threading
 import time
-import multiprocessing
-from http.server import HTTPServer
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime
 import matplotlib.pyplot as plt
 
@@ -13,7 +13,43 @@ import requests
 import utils
 import config
 from circularqueue import CircularQueue
-from httprequests import RequestHandler
+
+
+class NodeRequestHandler(BaseHTTPRequestHandler):
+    circular_queue = CircularQueue(100)
+    threshold = 20
+
+    def do_GET(self):
+        if self.path.endswith(f'{config.NODE_IMAGE}.png'):
+            content = generate_image_graph(self.circular_queue, self.threshold)
+
+            self.send_response_only(200)
+            self.send_header('Content-type', 'image/png')
+            self.end_headers()
+
+            self.wfile.write(content)
+        elif self.path == '/':
+            self.send_response_only(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+
+            html =   '<!DOCTYPE html>\n'
+            html +=  '<html>\n'
+            html +=  '   <head>\n'
+            html +=  '       <title>Dashboard</title>\n'
+            html +=  '       <meta http-equiv="refresh" content="5">\n'
+            html +=  '   </head>\n'
+            html +=  '   <body>\n'
+            html +=  f'       <h2 id="title">Local scans</h2>\n'
+            html += f'       <img id="graph" src="{config.NODE_IMAGE}.png">\n'
+            html +=  '   </body>\n'
+            html +=  '</html>\n'
+
+            self.wfile.write(html.encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+
 
 def send_post_request(url, data):
     headers = {'Content-type': 'application/json'}
@@ -39,23 +75,28 @@ def generate_image_graph(circular_queue, to_server_treshold):
                 color='r',
                 label='Above this line, notify Central Cloud')
     plt.legend()
-    plt.savefig(f'{config.NODE_IMAGE}.png')
+
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    image_bugger = buffer.getvalue()
+
+    buffer.close()
     plt.clf()
+
+    return image_bugger
 
 
 def run_node_image_server(local_server_class, handler_class, port):
     local_server_address = ('', port)
-    handler_class.image_name = config.NODE_IMAGE
-    handler_class.dashboard_title = 'Threats percentage'
     httpd = local_server_class(local_server_address, handler_class)
     print(f'Starting HTTP listener on port {port}...')
     httpd.serve_forever()
 
 
-def run_node_service(central_url, to_server_treshold):
+def run_node_service(central_url, circular_queue=CircularQueue(100),
+                     to_server_threshold=20):
     client_id = utils.random_word(5)
     client_ip = utils.get_ip()
-    circular_queue = CircularQueue(100)
 
     while True:
         threats = utils.random_percentage_long_tail_distribution()
@@ -70,9 +111,8 @@ def run_node_service(central_url, to_server_treshold):
             'threats': threats
         }
         circular_queue.enqueue(data)
-        generate_image_graph(circular_queue, to_server_treshold)
 
-        if threats > to_server_treshold:
+        if threats > to_server_threshold:
             send_post_request(central_url, data)
 
         time.sleep(1)
@@ -80,13 +120,18 @@ def run_node_service(central_url, to_server_treshold):
 
 def run_distributed_node(central_url,
                          local_server_class=HTTPServer,
-                         handler_class=RequestHandler,
                          port=8001,
-                         to_server_treshold = 20):
-    image_server = multiprocessing.Process(target=run_node_image_server,
-                                           args=(local_server_class, handler_class, port))
-    service = multiprocessing.Process(target=run_node_service,
-                                      args=(central_url, to_server_treshold))
+                         to_server_threshold=20):
+
+    handler_class = NodeRequestHandler
+    handler_class.circular_queue = CircularQueue(100)
+    handler_class.threshold = to_server_threshold
+
+    image_server = threading.Thread(target=run_node_image_server,
+                                    args=(local_server_class, handler_class, port))
+    service = threading.Thread(target=run_node_service,
+                               args=(central_url, handler_class.circular_queue,
+                                     to_server_threshold))
 
 
     image_server.start()
