@@ -47,8 +47,8 @@ class NodeRequestHandler(BaseHTTPRequestHandler):
                    '   <body>\n' \
                    f'       <h2 id="title">Local scans (client: {self.client_id})</h2>\n' \
                    f'       <h3>Node is {"ONLINE" if self.online[-1] else "OFFLINE"}</h3>' \
-                   f'        <button id="getButton">Turn {"offline" if self.online[-1] else "online"}</button>' \
-                   f'       <p><img id="graph" src="{config.NODE_IMAGE}.png">\n' \
+                   f'       <button id="getButton">Turn {"offline" if self.online[-1] else "online"}</button>' \
+                   f'       <p><img id="graph" src="{config.NODE_IMAGE}.png"></p>' \
                    '        <script>' \
                    '            document.getElementById("getButton")' \
                    '            .addEventListener("click", function() {' \
@@ -154,7 +154,7 @@ def run_post_service(central_url, online, send_to_server_queue):
             data = send_to_server_queue.get()
             if not send_post_request(central_url, data):
                 send_to_server_queue.put(data)
-        time.sleep(3)
+        time.sleep(1)
 
 
 def run_distributed_node(central_url,
