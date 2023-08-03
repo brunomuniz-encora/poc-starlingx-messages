@@ -18,6 +18,7 @@ from circulartimeseriesqueue import CircularTimeseriesDict
 class NodeRequestHandler(BaseHTTPRequestHandler):
     circular_queue = CircularTimeseriesDict(100)
     threshold = 20
+    client_id = ''
 
     def do_GET(self):
         if self.path.endswith(f'{config.NODE_IMAGE}.png'):
@@ -33,17 +34,18 @@ class NodeRequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/html')
             self.end_headers()
 
-            html =   '<!DOCTYPE html>\n'
-            html +=  '<html>\n'
-            html +=  '   <head>\n'
-            html +=  '       <title>Node Dashboard</title>\n'
-            html +=  '       <meta http-equiv="refresh" content="5">\n'
-            html +=  '   </head>\n'
-            html +=  '   <body>\n'
-            html +=  f'       <h2 id="title">Local scans</h2>\n'
-            html += f'       <img id="graph" src="{config.NODE_IMAGE}.png">\n'
-            html +=  '   </body>\n'
-            html +=  '</html>\n'
+            html = '<!DOCTYPE html>\n'\
+                   '<html>\n'\
+                   '   <head>\n'\
+                   '       <title>Node Dashboard</title>\n'\
+                   '       <meta http-equiv="refresh" content="5">\n'\
+                   '   </head>\n'\
+                   '   <body>\n'\
+                   f'       <h2 id="title">Local scans '\
+                   f'(client: {self.client_id})</h2>\n'\
+                   f'       <img id="graph" src="{config.NODE_IMAGE}.png">\n'\
+                   '   </body>\n'\
+                   '</html>\n'
 
             self.wfile.write(html.encode())
         else:
@@ -96,9 +98,9 @@ def run_node_image_server(local_server_class, handler_class, port):
     httpd.serve_forever()
 
 
-def run_node_service(central_url, circular_queue, to_server_threshold=20,
+def run_node_service(central_url, circular_queue, client_id,
+                     to_server_threshold=20,
                      scan_frequency=2):
-    client_id = utils.random_word(5)
     client_ip = utils.get_ip()
 
     while True:
@@ -128,16 +130,20 @@ def run_distributed_node(central_url,
                          to_server_threshold=20,
                          scan_frequency=2):
 
+    client_id = utils.random_word(5)
+
     handler_class = NodeRequestHandler
     handler_class.circular_queue = CircularTimeseriesDict(100)
     handler_class.threshold = to_server_threshold
+    handler_class.client_id = client_id
 
     image_server = threading.Thread(target=run_node_image_server,
-                                    args=(local_server_class, handler_class, port))
+                                    args=(local_server_class, handler_class,
+                                          port))
     service = threading.Thread(target=run_node_service,
                                args=(central_url, handler_class.circular_queue,
-                                     to_server_threshold, scan_frequency))
-
+                                     client_id, to_server_threshold,
+                                     scan_frequency))
 
     image_server.start()
     service.start()

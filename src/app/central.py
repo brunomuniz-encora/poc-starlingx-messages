@@ -34,17 +34,18 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/html')
             self.end_headers()
 
-            html =   '<!DOCTYPE html>\n'
-            html +=  '<html>\n'
-            html +=  '   <head>\n'
-            html +=  '       <title>Central Dashboard</title>\n'
-            html +=  '       <meta http-equiv="refresh" content="5">\n'
-            html +=  '   </head>\n'
-            html +=  '   <body>\n'
-            html +=  f'       <h2 id="title">Threat tracker</h2>\n'
-            html += f'       <img id="graph" src="{config.CENTRAL_CLOUD_IMAGE}.png">\n'
-            html +=  '   </body>\n'
-            html +=  '</html>\n'
+            html = '<!DOCTYPE html>\n'\
+                   '<html>\n'\
+                   '   <head>\n'\
+                   '       <title>Central Dashboard</title>\n'\
+                   '       <meta http-equiv="refresh" content="5">\n'\
+                   '   </head>\n'\
+                   '   <body>\n'\
+                   '       <h2 id="title">Threat tracker</h2>\n'\
+                   '       <img id="graph" src="' \
+                   f'{config.CENTRAL_CLOUD_IMAGE}.png">\n'\
+                   '   </body>\n'\
+                   '</html>\n'\
 
             self.wfile.write(html.encode())
         else:
