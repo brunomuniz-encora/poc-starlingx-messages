@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 
-class CircularTimeseriesDict:
+class CircularDictQueue:
     def __init__(self, capacity):
         self.capacity = capacity
         self.queue = defaultdict(int)

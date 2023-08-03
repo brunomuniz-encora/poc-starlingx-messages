@@ -13,11 +13,11 @@ import matplotlib.pyplot as plt
 import requests
 import utils
 import config
-from circulartimeseriesqueue import CircularTimeseriesDict
+from circulartimeseriesqueue import CircularDictQueue
 
 
 class NodeRequestHandler(BaseHTTPRequestHandler):
-    circular_queue = CircularTimeseriesDict(100)
+    circular_queue = CircularDictQueue(100)
     threshold = 20
     client_id = ''
     # This is an array because we want this to be passed around as a
@@ -140,7 +140,7 @@ def run_node_service(circular_queue,
             'clientip': client_ip,
             'threats': threats
         }
-        circular_queue.enqueue(now, threats)
+        circular_queue.enqueue(now, data)
 
         if threats > to_server_threshold:
             send_to_server_queue.put(data)
@@ -166,7 +166,7 @@ def run_distributed_node(central_url,
     client_id = utils.random_word(5)
 
     handler_class = NodeRequestHandler
-    handler_class.circular_queue = CircularTimeseriesDict(100)
+    handler_class.circular_queue = CircularDictQueue(100)
     handler_class.threshold = to_server_threshold
     handler_class.client_id = client_id
 
