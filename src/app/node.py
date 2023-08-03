@@ -19,6 +19,9 @@ class NodeRequestHandler(BaseHTTPRequestHandler):
     circular_queue = CircularTimeseriesDict(100)
     threshold = 20
     client_id = ''
+    # This is an array because we want this to be passed around as a
+    # reference, not a copy of the value.
+    online = [True]
 
     def do_GET(self):
         if self.path.endswith(f'{config.NODE_IMAGE}.png'):
@@ -34,20 +37,33 @@ class NodeRequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/html')
             self.end_headers()
 
-            html = '<!DOCTYPE html>\n'\
-                   '<html>\n'\
-                   '   <head>\n'\
-                   '       <title>Node Dashboard</title>\n'\
-                   '       <meta http-equiv="refresh" content="5">\n'\
-                   '   </head>\n'\
-                   '   <body>\n'\
-                   f'       <h2 id="title">Local scans '\
-                   f'(client: {self.client_id})</h2>\n'\
-                   f'       <img id="graph" src="{config.NODE_IMAGE}.png">\n'\
-                   '   </body>\n'\
+            html = '<!DOCTYPE html>\n' \
+                   '<html>\n' \
+                   '   <head>\n' \
+                   '       <title>Node Dashboard</title>\n' \
+                   '       <meta http-equiv="refresh" content="5">\n' \
+                   '   </head>\n' \
+                   '   <body>\n' \
+                   f'       <h2 id="title">Local scans (client: {self.client_id})</h2>\n' \
+                   f'       <h3>Node is {"ONLINE" if self.online[-1] else "OFFLINE"}</h3>' \
+                   f'        <button id="getButton">Turn {"offline" if self.online[-1] else "online"}</button>' \
+                   f'       <p><img id="graph" src="{config.NODE_IMAGE}.png">\n' \
+                   '        <script>' \
+                   '            document.getElementById("getButton")' \
+                   '            .addEventListener("click", function() {' \
+                   '                fetch("/switch")' \
+                   '            });' \
+                   '        </script>' \
+                   '    </body>\n' \
                    '</html>\n'
 
             self.wfile.write(html.encode())
+        elif self.path == '/switch':
+            self.online[-1] = not self.online[-1]
+            print(f'Node is going {"online" if self.online[-1] else "offline"}')
+            self.send_response_only(302)
+            self.send_header('Location', '/')
+            self.end_headers()
         else:
             self.send_response(404)
             self.end_headers()
@@ -58,7 +74,8 @@ def send_post_request(url, data):
     json_data = json.dumps(data)
 
     try:
-        response = requests.post(url, data=json_data, headers=headers, timeout=30)
+        response = requests.post(url, data=json_data, headers=headers,
+                                 timeout=30)
         if response.status_code != 204:
             print(f'POST request failed. Status code: {response.status_code}')
     except Exception as exception:
@@ -119,7 +136,7 @@ def run_node_service(central_url, circular_queue, client_id,
         circular_queue.enqueue(now, threats)
 
         if threats > to_server_threshold:
-            send_post_request(central_url, data)
+            send_to_server_queue.put(data)
 
         time.sleep(scan_frequency)
 
