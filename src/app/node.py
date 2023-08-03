@@ -3,6 +3,7 @@ Distributed nodes functions
 """
 import io
 import json
+import multiprocessing
 import threading
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -78,8 +79,12 @@ def send_post_request(url, data):
                                  timeout=30)
         if response.status_code != 204:
             print(f'POST request failed. Status code: {response.status_code}')
+            return False
     except Exception as exception:
         print(f'Exception on request to {url}: {exception}')
+        return False
+    print(f'POST request successful. Status code: {response.status_code}')
+    return True
 
 
 def generate_image_graph(circular_queue, to_server_threshold):
@@ -115,7 +120,9 @@ def run_node_image_server(local_server_class, handler_class, port):
     httpd.serve_forever()
 
 
-def run_node_service(central_url, circular_queue, client_id,
+def run_node_service(circular_queue,
+                     send_to_server_queue,
+                     client_id,
                      to_server_threshold=20,
                      scan_frequency=2):
     client_ip = utils.get_ip()
@@ -141,12 +148,21 @@ def run_node_service(central_url, circular_queue, client_id,
         time.sleep(scan_frequency)
 
 
+def run_post_service(central_url, online, send_to_server_queue):
+    while True:
+        while not send_to_server_queue.empty() and online[-1]:
+            data = send_to_server_queue.get()
+            if not send_post_request(central_url, data):
+                send_to_server_queue.put(data)
+        time.sleep(3)
+
+
 def run_distributed_node(central_url,
                          local_server_class=HTTPServer,
                          port=8001,
                          to_server_threshold=20,
                          scan_frequency=2):
-
+    send_to_server_queue = multiprocessing.Queue()
     client_id = utils.random_word(5)
 
     handler_class = NodeRequestHandler
@@ -155,12 +171,20 @@ def run_distributed_node(central_url,
     handler_class.client_id = client_id
 
     image_server = threading.Thread(target=run_node_image_server,
-                                    args=(local_server_class, handler_class,
+                                    args=(local_server_class,
+                                          handler_class,
                                           port))
-    service = threading.Thread(target=run_node_service,
-                               args=(central_url, handler_class.circular_queue,
-                                     client_id, to_server_threshold,
-                                     scan_frequency))
+    node_service = threading.Thread(target=run_node_service,
+                                    args=(handler_class.circular_queue,
+                                          send_to_server_queue,
+                                          client_id,
+                                          to_server_threshold,
+                                          scan_frequency))
+    post_to_server_service = threading.Thread(target=run_post_service,
+                                              args=(central_url,
+                                                    handler_class.online,
+                                                    send_to_server_queue))
 
     image_server.start()
-    service.start()
+    node_service.start()
+    post_to_server_service.start()
