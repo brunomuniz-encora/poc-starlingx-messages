@@ -13,11 +13,12 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import matplotlib.pyplot as plt
 
 import config
+from circulartimeseriesqueue import CircularTimeseriesDict
 
 
 class CentralRequestHandler(BaseHTTPRequestHandler):
     events = multiprocessing.Queue()
-    circular_queue = defaultdict(int)
+    circular_queue = CircularTimeseriesDict(100)
 
     def do_GET(self):
         if self.path.endswith(f'{config.CENTRAL_CLOUD_IMAGE}.png'):
@@ -101,7 +102,6 @@ def generate_image_graph(circular_queue):
 
 def aggregate_data(events, circular_queue, bucket_size):
     while True:
-        print(f'Aggregating new data in buckets of {bucket_size}s')
         # Get the amount of nodes with warnings since last read
         warnings = events.qsize()
         data = defaultdict(int)
@@ -114,7 +114,7 @@ def aggregate_data(events, circular_queue, bucket_size):
             data[aggregate_timestamp] += 1
 
         for key, value in data.items():
-            circular_queue[int(key)] += int(value)
+            circular_queue.enqueue(int(key), int(value))
 
         time.sleep(bucket_size)
 

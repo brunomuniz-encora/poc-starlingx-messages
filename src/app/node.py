@@ -12,11 +12,11 @@ import matplotlib.pyplot as plt
 import requests
 import utils
 import config
-from circularqueue import CircularQueue
+from circulartimeseriesqueue import CircularTimeseriesDict
 
 
 class NodeRequestHandler(BaseHTTPRequestHandler):
-    circular_queue = CircularQueue(100)
+    circular_queue = CircularTimeseriesDict(100)
     threshold = 20
 
     def do_GET(self):
@@ -63,15 +63,18 @@ def send_post_request(url, data):
         print(f'Exception on request to {url}: {exception}')
 
 
-def generate_image_graph(circular_queue, to_server_treshold):
-    values = circular_queue.get_items()
-    date_time = [value['datetime'] for value in values if value is not None]
-    threats = [value['threats'] for value in values if value is not None]
+def generate_image_graph(circular_queue, to_server_threshold):
+    values = circular_queue
+    date_time = [float(timestamp)
+                 for timestamp, _ in sorted(values.items(), key=lambda x: x[0])
+                 if timestamp is not None]
+    threats = [scans for _, scans in sorted(values.items(), key=lambda x: x[0])
+               if scans is not None]
 
     plt.plot(date_time, threats, color='blue')
     plt.xlabel('Date time (timestamp)')
     plt.ylabel('Threats percentage (%)')
-    plt.axhline(y=to_server_treshold,
+    plt.axhline(y=to_server_threshold,
                 color='r',
                 label='Above this line, notify Central Cloud')
     plt.legend()
@@ -93,8 +96,8 @@ def run_node_image_server(local_server_class, handler_class, port):
     httpd.serve_forever()
 
 
-def run_node_service(central_url, circular_queue=CircularQueue(100),
-                     to_server_threshold=20, scan_frequency=2):
+def run_node_service(central_url, circular_queue, to_server_threshold=20,
+                     scan_frequency=2):
     client_id = utils.random_word(5)
     client_ip = utils.get_ip()
 
@@ -103,14 +106,15 @@ def run_node_service(central_url, circular_queue=CircularQueue(100),
         print(f'[{datetime.now()} {client_ip}/{client_id} v{config.VERSION}] ' +
               f'Scans with threats: {threats}%')
 
+        now = datetime.now().timestamp()
         data = {
             'version': config.VERSION,
-            'datetime': datetime.now().timestamp(),
+            'datetime': now,
             'clientid': client_id,
             'clientip': client_ip,
             'threats': threats
         }
-        circular_queue.enqueue(data)
+        circular_queue.enqueue(now, threats)
 
         if threats > to_server_threshold:
             send_post_request(central_url, data)
@@ -125,7 +129,7 @@ def run_distributed_node(central_url,
                          scan_frequency=2):
 
     handler_class = NodeRequestHandler
-    handler_class.circular_queue = CircularQueue(100)
+    handler_class.circular_queue = CircularTimeseriesDict(100)
     handler_class.threshold = to_server_threshold
 
     image_server = threading.Thread(target=run_node_image_server,
