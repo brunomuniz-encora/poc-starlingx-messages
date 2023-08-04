@@ -3,24 +3,27 @@ Central server functions
 """
 import io
 import json
+import math
 import multiprocessing
 import threading
 import time
+from collections import defaultdict
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import matplotlib.pyplot as plt
 
 import config
-from circularqueue import CircularQueue
+from circulartimeseriesqueue import CircularDictQueue
 
 
 class CentralRequestHandler(BaseHTTPRequestHandler):
-    queue = multiprocessing.Queue()
-    circular_queue = CircularQueue(100)
+    events = multiprocessing.Queue()
+    aggregated_events = CircularDictQueue(100)
+    active_clients = defaultdict(str)
 
     def do_GET(self):
         if self.path.endswith(f'{config.CENTRAL_CLOUD_IMAGE}.png'):
-            content = generate_image_graph(self.circular_queue)
+            content = generate_image_graph(self.aggregated_events)
 
             self.send_response_only(200)
             self.send_header('Content-type', 'image/png')
@@ -32,22 +35,37 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/html')
             self.end_headers()
 
-            html =   '<!DOCTYPE html>\n'
-            html +=  '<html>\n'
-            html +=  '   <head>\n'
-            html +=  '       <title>Dashboard</title>\n'
-            html +=  '       <meta http-equiv="refresh" content="5">\n'
-            html +=  '   </head>\n'
-            html +=  '   <body>\n'
-            html +=  f'       <h2 id="title">Threat tracker</h2>\n'
-            html += f'       <img id="graph" src="{config.CENTRAL_CLOUD_IMAGE}.png">\n'
-            html +=  '   </body>\n'
-            html +=  '</html>\n'
+            html = '<!DOCTYPE html>\n'\
+                   '<html>\n'\
+                   '   <head>\n'\
+                   '       <title>Central Dashboard</title>\n'\
+                   '       <meta http-equiv="refresh" content="5">\n'\
+                   '   </head>\n'\
+                   '   <body>\n'\
+                   '       <h2 id="title">Threat tracker</h2>\n'\
+                   f'       <p><img id="graph" src="{config.CENTRAL_CLOUD_IMAGE}.png"></p>' \
+                   f'       <p>' \
+                   f'           {self.generate_clients_table(self.active_clients)}' \
+                   '        </p>'\
+                   '   </body>\n'\
+                   '</html>\n'\
 
             self.wfile.write(html.encode())
         else:
             self.send_response(404)
             self.end_headers()
+
+    def generate_clients_table(self, active_clients):
+        table_html = '<table>\n'
+        table_html += '<tr><th>Client ID</th><th>Client IP</th><th>Version</th></tr>\n'
+
+        for client_id, client_data in active_clients.items():
+            client_ip = client_data['clientip']
+            version = client_data['version']
+            table_html += f'<tr><td>{client_id}</td><td>{client_ip}</td><td>{version}</td></tr>\n'
+
+        table_html += '</table>'
+        return table_html
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
@@ -67,21 +85,26 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
         print(f"[{date_time} {client_ip}/{client_id} v{version}] " +
               f"Threats amount {threats}%, an attack is happening in this node region")
 
-        self.queue.put(post_data)
+        self.events.put(post_data)
 
         response = {'message': 'Received POST data successfully',
                     'data': json_data}
         self.wfile.write(json.dumps(response).encode('utf-8'))
 
 
-def generate_image_graph(circular_queue):
-    values = circular_queue.get_items()
-    date_time = [value['datetime'] for value in values if value is not None]
-    warnings_amount = [value['warningsamount'] for value in values if value is not None]
+def generate_image_graph(aggregated_events):
+    values = aggregated_events
+    date_time = [float(timestamp)
+                 for timestamp, _ in sorted(values.items(), key=lambda x: x[0])
+                 if timestamp is not None]
+    warnings_amount = [warnings
+                       for _, warnings
+                       in sorted(values.items(), key=lambda x: x[0])
+                       if warnings is not None]
 
     plt.plot(date_time, warnings_amount, color='blue')
     plt.xlabel('Date time (timestamp)')
-    plt.ylabel('Nodes with warnings')
+    plt.ylabel('Warnings')
 
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
@@ -93,20 +116,32 @@ def generate_image_graph(circular_queue):
     return image_buffer
 
 
-def aggregate_data(events, aggregate, bucket_size):
+def aggregate_data(events, aggregated_events, active_clients, bucket_size):
     while True:
         # Get the amount of nodes with warnings since last read
         warnings = events.qsize()
+        data = defaultdict(int)
+        active_clients.clear()
 
         # Dequeue read elements
         for _ in range(0, warnings):
-            events.get()
+            event = json.loads(events.get())
 
-        data = {
-            'datetime': datetime.now().timestamp(),
-            'warningsamount': warnings
-        }
-        aggregate.enqueue(data)
+            # Aggregate event count
+            aggregate_timestamp = \
+                math.floor(event["datetime"] / bucket_size) * bucket_size
+            data[aggregate_timestamp] += 1
+
+            # Set active clients info
+            active_clients[event["clientid"]] = {
+                'version': event["version"],
+                'clientid': event["clientid"],
+                'clientip': event["clientip"]
+            }
+
+        for key, value in data.items():
+            aggregated_events.enqueue(int(key), int(value))
+
         time.sleep(bucket_size)
 
 
@@ -124,8 +159,9 @@ def run_central_cloud(server_class=HTTPServer,
     central_server = threading.Thread(target=run_central_server,
                                            args=(server_class, handler_class, port))
     aggregation_service = threading.Thread(target=aggregate_data,
-                                            args=(handler_class.queue,
-                                                  handler_class.circular_queue,
+                                            args=(handler_class.events,
+                                                  handler_class.aggregated_events,
+                                                  handler_class.active_clients,
                                                   bucket_size))
 
     central_server.start()
