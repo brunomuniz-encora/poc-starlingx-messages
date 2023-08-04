@@ -5,6 +5,7 @@ import io
 import json
 import math
 import multiprocessing
+import statistics
 import threading
 import time
 from collections import defaultdict
@@ -31,6 +32,7 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
 
             self.wfile.write(content)
         elif self.path == '/':
+            threat_index = generate_metrics(self.aggregated_events)
             self.send_response_only(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
@@ -43,9 +45,10 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
                    '   </head>\n'\
                    '   <body>\n'\
                    '       <h2 id="title">Threat tracker</h2>\n'\
-                   f'       <p><img id="graph" src="{config.CENTRAL_CLOUD_IMAGE}.png"></p>' \
+                   f'       <h4>Threat index: {threat_index}</h4>' \
+                   f'       <img id="graph" src="{config.CENTRAL_CLOUD_IMAGE}.png">' \
                    f'       <p>' \
-                   f'           {self.generate_clients_table(self.active_clients)}' \
+                   f'           {generate_clients_table(self.active_clients)}' \
                    '        </p>'\
                    '   </body>\n'\
                    '</html>\n'\
@@ -54,18 +57,6 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
-
-    def generate_clients_table(self, active_clients):
-        table_html = '<table>\n'
-        table_html += '<tr><th>Client ID</th><th>Client IP</th><th>Version</th></tr>\n'
-
-        for client_id, client_data in active_clients.items():
-            client_ip = client_data['clientip']
-            version = client_data['version']
-            table_html += f'<tr><td>{client_id}</td><td>{client_ip}</td><td>{version}</td></tr>\n'
-
-        table_html += '</table>'
-        return table_html
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
@@ -90,6 +81,30 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
         response = {'message': 'Received POST data successfully',
                     'data': json_data}
         self.wfile.write(json.dumps(response).encode('utf-8'))
+
+
+def generate_metrics(aggregated_events):
+    values = aggregated_events
+    if len(values.items()) < 1:
+        return 0
+    warnings_amount = [warnings
+                       for _, warnings
+                       in sorted(values.items(), key=lambda x: x[0])
+                       if warnings is not None]
+    return statistics.mean(warnings_amount)
+
+
+def generate_clients_table(active_clients):
+    table_html = '<table>\n'
+    table_html += '<tr><th>Client ID</th><th>Client IP</th><th>Version</th></tr>\n'
+
+    for client_id, client_data in active_clients.items():
+        client_ip = client_data['clientip']
+        version = client_data['version']
+        table_html += f'<tr><td>{client_id}</td><td>{client_ip}</td><td>{version}</td></tr>\n'
+
+    table_html += '</table>'
+    return table_html
 
 
 def generate_image_graph(aggregated_events):

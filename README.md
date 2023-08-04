@@ -2,7 +2,7 @@
 
 - [X] Generate timeseries on demand
 - [X] Central is able to receive past events from nodes and plot properly
-- [ ] Add some sort of simple retry logic for offline nodes
+- [X] Add some sort of simple retry logic for offline nodes
 - [X] Remove built charts from the helm-charts
 
 >_NOTE_: At the end of the session of the central node (when interrupted),
