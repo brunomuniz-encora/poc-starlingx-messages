@@ -140,7 +140,7 @@ def run_node_service(circular_queue,
             'clientip': client_ip,
             'threats': threats
         }
-        circular_queue.enqueue(now, data)
+        circular_queue.enqueue(now, threats)
 
         if threats > to_server_threshold:
             send_to_server_queue.put(data)
