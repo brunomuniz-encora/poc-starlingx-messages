@@ -59,3 +59,7 @@ debian-write-prerm: debian-write-postinst
 package-debian: debian-write-prerm
 	dpkg-deb --build $(TEMP_DIR) .
 	echo 'You can now install the package with "sudo dpkg -i <.deb file>".'
+
+
+package-fluxcd:
+	echo 'TODO'

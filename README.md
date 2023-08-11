@@ -4,7 +4,8 @@
 - [X] Central is able to receive past events from nodes and plot properly
 - [X] Add some sort of simple retry logic for offline nodes
 - [X] Remove built charts from the helm-charts
-- [X] Package as a Debian package 
+- [X] Package as a Debian package
+- [ ] FluxCD structure/packaging
 
 >_NOTE_: At the end of the session of the central node (when interrupted),
 > a timeseries of the received data is generated.
