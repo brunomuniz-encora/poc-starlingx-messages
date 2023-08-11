@@ -4,13 +4,14 @@
 - [X] Central is able to receive past events from nodes and plot properly
 - [X] Add some sort of simple retry logic for offline nodes
 - [X] Remove built charts from the helm-charts
+- [X] Package as a Debian package 
 
 >_NOTE_: At the end of the session of the central node (when interrupted),
 > a timeseries of the received data is generated.
 
 ## Running as a Demo
 
-For a Demo, just do:
+For a local Demo, just do:
 
 ```shell
 python3 -m venv venv; \
@@ -84,26 +85,24 @@ Kill all when you're done with:
 sudo kill $(ps -ef | grep main.py | awk '{print $2}')
 ```
 
-## Docker build and run
+## Debian packaging
 
-To build the dokcer image:
+To package as a Debian package, run:
 
 ```shell
-docker build -t poc-starlingx .
+make package-debian
 ```
 
-Run an ephemeral container with the central with:
+This creates a `.deb` file that you can install with:
 
 ```shell
-docker run -e MODE=central -p 8000:8000 -it --rm poc-starlingx
+sudo dpkg -i <.deb file>
 ```
 
-Run ephemeral nodes with:
+You can later uninstall with:
 
 ```shell
-docker run --network host -v /tmp/timeseries:/app/output \
--e MODE=node -e SERVER=127.0.0.1:8000 \
--it --rm poc-starlingx
+sudo apt remove poc-starlingx
 ```
 
 ## Helm
@@ -111,56 +110,21 @@ docker run --network host -v /tmp/timeseries:/app/output \
 To build the chart:
 
 ```shell
-mkdir charts
-cd charts
-helm package ../helm-chart/
+make package-helm
 ```
 
 ### To run the `central`
 
-Create the following file:
+You can get an example override file in `packaging/helm/overrides/central-overrides.yaml`. Then run:
 
 ```shell
-cat <<EOF > central.yaml
-env:
-  - name: MODE
-    value: central
-
-image:
-  repository: <optional-registry-address>/poc-starlingx
-
-fullNameOverride: poc-starlingx-central
-EOF
-```
-
-Then run:
-
-```shell
-helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f central.yaml
+helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f packaging/helm/overrides/central-overrides.yaml
 ```
 
 ### To run a `node`
 
-Create the following file:
+You can get an example override file in `packaging/helm/overrides/node-overrides.yaml`. Then run:
 
 ```shell
-cat <<EOF > node.yaml
-env:
-  - name: MODE
-    value: node
-  - name: SERVER
-    value: <probably localhost:8000>
-
-image:
-  repository: <optional-registry-address>/poc-starlingx
-
-fullNameOverride: poc-starlingx-central
-EOF
+helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f packaging/helm/overrides/node-overrides.yaml
 ```
-
-Then run:
-
-```shell
-helm upgrade -i poc-starlingx-node poc-starlingx-0.4.0.tgz -f node.yaml
-```
-

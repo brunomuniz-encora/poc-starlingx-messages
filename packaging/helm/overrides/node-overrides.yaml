@@ -1,0 +1,18 @@
+image:
+  repository: registry.local:9001/poc-starlingx
+  containerPort: 8000
+
+env:
+  - name: MODE
+    value: node
+  - name: SERVER
+    value: 10.10.10.3:31100
+  - name: PORT
+    value: "8000"
+
+kube:
+  port: 32100
+  replicas: 3
+  secret: my-docker-reg-secret
+  name: poc-starlingx-nodes-1
+

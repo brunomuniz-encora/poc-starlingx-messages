@@ -1,0 +1,17 @@
+     image:
+  repository: "registry.local:9001/poc-starlingx"
+  containerPort: 8000
+
+env:
+  - name: MODE
+    value: central
+  - name: PORT
+    value: "8000"
+  - name: BUCKET_SIZE
+    value: 5
+
+kube:
+  port: 31100
+  replicas: 1
+  secret: my-docker-reg-secret
+  name: poc-starlingx-central
