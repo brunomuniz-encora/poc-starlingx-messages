@@ -1,0 +1,30 @@
+apiVersion: "helm.toolkit.fluxcd.io/v2beta1"
+kind: HelmRelease
+metadata:
+  name: poc-starlingx
+  labels:
+    chart_group: poc-starlingx
+spec:
+  releaseName: poc-starlingx
+  chart:
+    spec:
+      chart: poc-starlingx
+      version: 1.1.0
+      sourceRef:
+        kind: HelmRepository
+        name: poc-starlingx
+  interval: 5m
+  timeout: 30m
+  test:
+    enable: false
+  install:
+    disableHooks: false
+  upgrade:
+    disableHooks: false
+  valuesFrom:
+    - kind: Secret
+      name: poc-starlingx-static-overrides
+      valuesKey: poc-starlingx-static-overrides.yaml
+    - kind: Secret
+      name: poc-starlingx-system-overrides
+      valuesKey: poc-starlingx-system-overrides.yaml

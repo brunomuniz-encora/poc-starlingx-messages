@@ -1,0 +1,12 @@
+namespace: default
+resources:
+  - helmrelease.yaml
+secretGenerator:  # this will create the Secrets (that hold the overrides) as part of application install
+  - name: poc-starlingx-static-overrides
+    files:
+      - poc-starlingx-static-overrides.yaml
+  - name: poc-starlingx-system-overrides
+    files:
+      - poc-starlingx-system-overrides.yaml
+generatorOptions:
+  disableNameSuffixHash: true

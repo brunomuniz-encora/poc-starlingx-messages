@@ -1,0 +1,7 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: poc-starlingx
+spec:
+  interval: 120m
+  url: registry.local:9001/poc-starlingx
