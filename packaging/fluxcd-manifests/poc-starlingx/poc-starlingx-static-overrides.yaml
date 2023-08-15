@@ -7,7 +7,7 @@ env:
     value: "8000"
 
 image:
-  repository: registry.local:9001/poc-starlingx
+  repository: docker.io/brunomuniz/poc-starlingx
   tag: latest
   containerPort: 8000
 
