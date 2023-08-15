@@ -1,5 +1,5 @@
 image:
-  repository: registry.local:9001/poc-starlingx
+  repository: docker.io/brunomuniz/poc-starlingx
   containerPort: 8000
 
 env:

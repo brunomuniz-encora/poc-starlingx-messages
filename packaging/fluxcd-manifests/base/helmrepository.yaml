@@ -4,4 +4,4 @@ metadata:
   name: poc-starlingx
 spec:
   interval: 120m
-  url: registry.local:9001/poc-starlingx
+  url: docker.io/brunomuniz/poc-starlingx

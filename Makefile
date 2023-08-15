@@ -3,6 +3,10 @@ VERSION := $(shell cat VERSION)
 package-helm:
 	helm package packaging/helm/helm-chart/
 
+package-stx:
+	cd packaging; tar -czvf ../poc-starlingx-stx-pkg.tar.gz *; cd -
+
+
 TEMP_DIR := $(shell mktemp -d)
 DEBIAN_DIR = $(TEMP_DIR)/DEBIAN
 DEBIAN_control = $(DEBIAN_DIR)/control

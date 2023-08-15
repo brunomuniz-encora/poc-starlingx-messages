@@ -3,3 +3,4 @@ timeseries.png
 .idea
 packaging/helm/charts
 *.deb
+*.tar.gz
