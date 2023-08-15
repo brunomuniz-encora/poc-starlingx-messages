@@ -4,3 +4,4 @@ timeseries.png
 packaging/helm/charts
 *.deb
 *.tar.gz
+*.tgz
