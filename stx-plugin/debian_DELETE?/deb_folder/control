@@ -1,0 +1,25 @@
+Source: python3-k8sapp-poc-starlingx
+Maintainer: Daniel Caires <daniel.caires@encora.com>
+Section: misc
+Priority: optional
+Build-Depends: debhelper-compat (= 13),
+ dh-python,
+ python3-all,
+ python3-pbr,
+ python3-setuptools,
+ python3-wheel
+
+Package: python3-k8sapp-poc-starlingx
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: StarlingX Sysinv poc Extensions
+ This package contains sysinv plugins for the poc
+ K8S app.
+ 
+Package: python3-k8sapp-poc-starlingx-wheels
+Section: libs
+Architecture: any
+Depends: ${misc:Depends}, ${python3:Depends}, python3-wheel
+Description: StarlingX Sysinv poc Extension Wheels
+ This package contains python wheels for the poc
+ K8S app plugins.

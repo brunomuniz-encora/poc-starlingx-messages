@@ -1,0 +1,5 @@
+poc-starlingx-helm (1.0-1) UNRELEASED; urgency=medium
+
+  * Initial release. (Closes: #XXXXXX)
+
+ -- Daniel Marques Caires <daniel-caires@ENCSABCAMLT1164>  Fri, 11 Aug 2023 09:16:06 -0300

@@ -1,8 +1,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta1
 kind: HelmRepository
 metadata:
-  name: poc-starlingx
+  name: stx-platform
 spec:
   interval: 2m
-  url: http://192.168.206.1:8080/helm_charts/poc-starlingx
+  url: http://192.168.206.1:8080/helm_charts/stx-platform
 

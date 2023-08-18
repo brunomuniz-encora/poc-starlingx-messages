@@ -1,7 +1,7 @@
 venv
 timeseries.png
 .idea
-packaging/helm/charts
+stx-packaging/helm/charts
 *.deb
 *.tar.gz
 *.tgz

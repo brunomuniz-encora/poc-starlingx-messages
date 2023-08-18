@@ -119,7 +119,7 @@ make package-helm
 You can get an example override file in `packaging/helm/overrides/central-overrides.yaml`. Then run:
 
 ```shell
-helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f packaging/helm/overrides/central-overrides.yaml
+helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f stx-packaging/helm/overrides/central-overrides.yaml
 ```
 
 ### To run a `node`
@@ -127,5 +127,5 @@ helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f packaging/helm/
 You can get an example override file in `packaging/helm/overrides/node-overrides.yaml`. Then run:
 
 ```shell
-helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f packaging/helm/overrides/node-overrides.yaml
+helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f stx-packaging/helm/overrides/node-overrides.yaml
 ```

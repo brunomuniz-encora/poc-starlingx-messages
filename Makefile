@@ -1,10 +1,16 @@
 VERSION := $(shell cat VERSION)
 
+CHART_NAME := $(shell cat helm-chart/Chart.yaml | grep name | awk -F ': ' '{print $$2}')
+CHART_VERSION := $(shell cat helm-chart/Chart.yaml | grep -E '^version' | awk -F ': ' '{print $$2}')
+
 package-helm:
-	helm package packaging/helm/helm-chart/
+	helm package helm-chart/
+	echo "$(CHART_NAME)-$(CHART_VERSION).tgz"
+	echo "$(CHART_NAME)-$(CHART_VERSION)-helm-package.tgz"
+	mv "$(CHART_NAME)-$(CHART_VERSION).tgz" "$(CHART_NAME)-$(CHART_VERSION)-helm-package.tgz"
 
 package-stx:
-	cd packaging; tar -czvf ../poc-starlingx-stx-pkg.tar.gz *; cd -
+	cd stx-packaging; tar -czvf ../poc-starlingx-stx-pkg.tar.gz *; cd -
 
 
 TEMP_DIR := $(shell mktemp -d)
@@ -65,5 +71,6 @@ package-debian: debian-write-prerm
 	echo 'You can now install the package with "sudo dpkg -i <.deb file>".'
 
 
-package-fluxcd:
+package-fluxcd: package-helm
 	echo 'TODO'
+	echo 'TODO Something to copy the packaged helm to charts/'
