@@ -5,3 +5,6 @@ stx-packaging/helm/charts
 *.deb
 *.tar.gz
 *.tgz
+stx-plugin/k8sapp_poc_starlingx/dist
+stx-plugin/k8sapp_poc_starlingx/build
+stx-plugin/k8sapp_poc_starlingx/*.egg-info

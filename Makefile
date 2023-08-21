@@ -5,11 +5,20 @@ CHART_VERSION := $(shell cat helm-chart/Chart.yaml | grep -E '^version' | awk -F
 
 package-helm:
 	helm package helm-chart/
-	echo "$(CHART_NAME)-$(CHART_VERSION).tgz"
-	echo "$(CHART_NAME)-$(CHART_VERSION)-helm-package.tgz"
-	mv "$(CHART_NAME)-$(CHART_VERSION).tgz" "$(CHART_NAME)-$(CHART_VERSION)-helm-package.tgz"
+	#echo "$(CHART_NAME)-$(CHART_VERSION).tgz"
+	#echo "$(CHART_NAME)-$(CHART_VERSION)-helm-package.tgz"
+	#mv "$(CHART_NAME)-$(CHART_VERSION).tgz" "$(CHART_NAME)-$(CHART_VERSION)-helm-package.tgz"
 
-package-stx:
+package-plugin:
+	cd stx-plugin; \
+	python3 setup.py bdist_wheel \
+	--universal -d k8sapp_poc_starlingx
+
+package-stx: package-helm package-plugin
+	rm stx-packaging/charts/* | true
+	cp poc-starlingx*.tgz stx-packaging/charts/
+	rm stx-packaging/plugins/* | true
+	cp stx-plugin/k8sapp_poc_starlingx/k8sapp_poc_starlingx*.whl stx-packaging/plugins/
 	cd stx-packaging; tar -czvf ../poc-starlingx-stx-pkg.tar.gz *; cd -
 
 
@@ -70,7 +79,3 @@ package-debian: debian-write-prerm
 	dpkg-deb --build $(TEMP_DIR) .
 	echo 'You can now install the package with "sudo dpkg -i <.deb file>".'
 
-
-package-fluxcd: package-helm
-	echo 'TODO'
-	echo 'TODO Something to copy the packaged helm to charts/'
