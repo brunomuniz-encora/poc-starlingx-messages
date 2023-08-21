@@ -15,10 +15,13 @@ package-plugin:
 	--universal -d k8sapp_poc_starlingx
 
 package-stx: package-helm package-plugin
+	mkdir -p stx-packaging/charts
+	mkdir -p stx-packaging/plugins
 	rm stx-packaging/charts/* | true
 	cp poc-starlingx*.tgz stx-packaging/charts/
 	rm stx-packaging/plugins/* | true
 	cp stx-plugin/k8sapp_poc_starlingx/k8sapp_poc_starlingx*.whl stx-packaging/plugins/
+	cd stx-packaging; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
 	cd stx-packaging; tar -czvf ../poc-starlingx-stx-pkg.tar.gz *; cd -
 
 

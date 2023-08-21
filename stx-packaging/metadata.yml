@@ -1,7 +1,0 @@
-debname: poc-starlingx-helm
-debver: 1.0-1
-dl_path:
-  name: poc-starlingx-1.1.0.tar.gz
-  url: /home/sysadmin/poc-starlingx.tar.gz
-revision:
-  dist: $STX_DIST

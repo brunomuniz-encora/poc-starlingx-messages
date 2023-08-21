@@ -1,5 +1,5 @@
 #Application Namespace
-HELM_NS_POC_STARLINGX = "poc-starlingx"
+HELM_NS_POC_STARLINGX = "default"
 
 # Application Name
 HELM_APP_POC_STARLINGX = "poc-starlingx"
