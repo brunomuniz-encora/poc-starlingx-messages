@@ -22,7 +22,7 @@ package-stx: package-helm package-plugin
 	rm stx-packaging/plugins/* || true
 	cp stx-plugin/k8sapp_poc_starlingx/k8sapp_poc_starlingx*.whl stx-packaging/plugins/
 	cd stx-packaging; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
-	cd stx-packaging; tar -czvf ../poc-starlingx-stx-pkg.tar.gz *; cd -
+	cd stx-packaging; tar -czvf ../poc-starlingx-stx-pkg.tar.gz *
 
 
 TEMP_DIR := $(shell mktemp -d)

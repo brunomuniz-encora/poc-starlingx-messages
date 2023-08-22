@@ -5,7 +5,7 @@
 - [X] Add some sort of simple retry logic for offline nodes
 - [X] Remove built charts from the helm-charts
 - [X] Package as a Debian package
-- [ ] FluxCD structure/packaging
+- [X] FluxCD structure/packaging
 
 >_NOTE_: At the end of the session of the central node (when interrupted),
 > a timeseries of the received data is generated.
@@ -129,3 +129,22 @@ You can get an example override file in `packaging/helm/overrides/node-overrides
 ```shell
 helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f stx-packaging/helm/overrides/node-overrides.yaml
 ```
+
+## Runnins in StarlingX
+
+Work in progress list of steps to get this running on StarlingX:
+
+- Run `make package-stx`: this will create a `poc-starlingx-stx-pkg.tar.gz`.
+- Copy the file above to your StarlingX box: `scp ...`
+- Generate a Kubernetes secret called `my-docker-reg-secret` with the below command:
+  ```shell
+  kubectl create secret docker-registry my-docker-reg-secret --docker-server=registry.local:9001 --docker-username=admin --docker-password=Chang3*m3 -n default
+  ```
+- Upload package with:
+  ```shell
+  system application-upload poc-starlingx-stx-pkg.tar.gz
+  ```
+- Deploy the application with:
+  ```shell
+  system application-apply poc-starlingx
+  ```

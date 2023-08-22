@@ -20,7 +20,24 @@ class PocStarlingxHelm(base.BaseHelm):
 
     def get_overrides(self, namespace=None):
 
-        overrides = {}            
+        overrides = {
+            constants.HELM_NS_POC_STARLINGX: {
+                "env": [
+                    {"name": "MODE", "value": "central"}
+                ],
+                "image": {
+                    "repository": "docker.io/brunomuniz/poc-starlingx",
+                    "tag": "latest",
+                    "containerPort": "8000"
+                },
+                "kube": {
+                    "port": 31234,
+                    "replicas": 1,
+                    "secret": "my-docker-reg-secret",
+                    "name": "poc-starlingx"
+                }
+            },
+        }
 
         if namespace in self.SUPPORTED_NAMESPACES:
             return overrides[namespace]

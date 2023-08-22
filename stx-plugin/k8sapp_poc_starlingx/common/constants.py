@@ -5,7 +5,7 @@ HELM_NS_POC_STARLINGX = "default"
 HELM_APP_POC_STARLINGX = "poc-starlingx"
 
 # Helm: Supported charts:
-HELM_CHART_POC_STARLINGX = "poc-starlingx"
+HELM_CHART_POC_STARLINGX = "central"
 
 # FluxCD:
 FLUXCD_HELMRELEASE_POC_STARLINGX = "poc-starlingx"
