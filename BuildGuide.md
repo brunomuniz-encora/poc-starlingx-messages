@@ -1,13 +1,15 @@
 
 # Deploy an aplication as a StarlingX app
 
-This section describes the steps to deploy an application a StarlingX application.
+This guide describes the steps to deploy an application as a StarlingX application.
 
  - [FluxCD Manifest](#fluxcd-manifest)
  - [Plugins](#plugins)
+ - [Application structure](#application-structure)
 
 ## FluxCD Manifest
 
+The FluxCD Manifest for the StarlingX enviroment must follow a specific structure. The overall, generic structure of a StarlingX FluxCD Manifest is as follow:
 
 ```shell
         fluxcd-manifests/
@@ -23,9 +25,12 @@ This section describes the steps to deploy an application a StarlingX applicatio
         └── APP-NAME-system-overrides.yaml
 ```
 
-Each layer must have a kustomization file that contains the resources to apply.
+An application may make use of multiple folders of APP-NAME containing different helmreleases for each one. An exaple of this can be seen in the [Dell Storage app](https://opendev.org/starlingx/app-dell-storage/src/branch/master/stx-dell-storage-helm/stx-dell-storage-helm/fluxcd-manifests) for StarlingX.
+
 
 #### kustomization.yaml
+
+Each layer must have a kustomization file that contains the resources to apply.
 
 ```shell
     apiVersion: kustomize.config.k8s.io/v1beta1
@@ -50,7 +55,7 @@ Each layer must have a kustomization file that contains the resources to apply.
       name: stx-platform
     spec:
       url: http://<cluster_host_ip>:8080/helm_charts/stx-platform
-      # The cluster host ip is 192.168.206.1 if it wasnt changed during bootstrap
+      # The cluster host ip is 192.168.206.1 if it wasn't changed during bootstrap
       interval: 60m  # interval to check the repository for updates
 ```
 
@@ -142,3 +147,38 @@ Each layer must have a kustomization file that contains the resources to apply.
 
 ## Plugins
 
+The plugins for the StarlingX applications will vary for each application, but a few files must exist for the StarlingX system to deploy an application as an system application. For a complete overview of different plugins used in the various applications available now for the StarlingX you may check the various applicationsavailable in the [StarlingX applications repository](https://opendev.org/starlingx?sort=recentupdate&language=&q=app). Some of the applications are:
+
+ - [Certificate Manager Application](https://opendev.org/starlingx/cert-manager-armada-app/src/branch/master/python3-k8sapp-cert-manager/k8sapp_cert_manager/k8sapp_cert_manager)
+ - [Portieris Application](https://opendev.org/starlingx/portieris-armada-app/src/branch/master/python3-k8sapp-portieris/k8sapp_portieris/k8sapp_portieris)
+ - [Dell Storage Application](https://opendev.org/starlingx/app-dell-storage/src/branch/master/python3-k8sapp-dell-storage/k8sapp_dell_storage/k8sapp_dell_storage)
+ - [Vault Application](https://opendev.org/starlingx/vault-armada-app/src/branch/master/python3-k8sapp-vault/k8sapp_vault/k8sapp_vault)
+
+
+An overall structure for the plugins folder is as follow:
+
+```shell
+        python3-k8sapp-APP-NAME/
+    ├── k8sapp_APP_NAME
+    │   ├── common
+    │   │   ├──__init__.py 
+    │   │   └──
+    │   ├── helm
+    │   │   ├──__init__.py 
+    │   │   └──
+    │   ├── kustomize
+    │   │   ├──__init__.py 
+    │   │   └──
+    │   ├── lifecycle
+    │   │   ├──__init__.py 
+    │   │   └──
+    │   └── tests
+    │       ├──__init__.py 
+    │       └──
+    ├── __init__.py
+    ├── setup.cfg
+    ├── setup.py
+    └── 
+```
+
+## Application structure
