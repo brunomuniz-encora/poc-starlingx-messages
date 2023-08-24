@@ -44,7 +44,8 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
                    '       <meta http-equiv="refresh" content="5">\n'\
                    '   </head>\n'\
                    '   <body>\n'\
-                   '       <h2 id="title">Threat tracker</h2>\n'\
+                   '       <h2 id="title">Threat tracker (version: '\
+                   '                1.2.1)</h2>\n'\
                    f'       <h4>Threat index: {threat_index}</h4>' \
                    f'       <img id="graph" src="{config.CENTRAL_CLOUD_IMAGE}.png">' \
                    f'       <p>' \
