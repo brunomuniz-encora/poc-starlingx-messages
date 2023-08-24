@@ -5,24 +5,25 @@ CHART_VERSION := $(shell cat helm-chart/Chart.yaml | grep -E '^version' | awk -F
 
 package-helm:
 	helm package helm-chart/
-	#echo "$(CHART_NAME)-$(CHART_VERSION).tgz"
-	#echo "$(CHART_NAME)-$(CHART_VERSION)-helm-package.tgz"
-	#mv "$(CHART_NAME)-$(CHART_VERSION).tgz" "$(CHART_NAME)-$(CHART_VERSION)-helm-package.tgz"
 
 package-plugin:
 	cd stx-plugin; \
 	python3 setup.py bdist_wheel \
 	--universal -d k8sapp_poc_starlingx
+	# clean up
+	rm -r stx-plugin/build/ stx-plugin/k8sapp_poc_starlingx.egg-info/ stx-plugin/AUTHORS stx-plugin/ChangeLog
 
 package-stx: package-helm package-plugin
 	mkdir -p stx-packaging/charts
 	mkdir -p stx-packaging/plugins
-	rm stx-packaging/charts/* || true
-	cp poc-starlingx*.tgz stx-packaging/charts/
-	rm stx-packaging/plugins/* || true
-	cp stx-plugin/k8sapp_poc_starlingx/k8sapp_poc_starlingx*.whl stx-packaging/plugins/
+	mv poc-starlingx*.tgz stx-packaging/charts/
+	mv stx-plugin/k8sapp_poc_starlingx/k8sapp_poc_starlingx*.whl stx-packaging/plugins/
 	cd stx-packaging; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
 	cd stx-packaging; tar -czvf ../poc-starlingx-stx-pkg.tar.gz *
+	# clean up
+	rm stx-packaging/checksum.md5
+	rm -r stx-packaging/charts/
+	rm -r stx-packaging/plugins/
 
 
 TEMP_DIR := $(shell mktemp -d)
