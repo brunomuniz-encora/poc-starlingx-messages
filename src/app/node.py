@@ -45,7 +45,7 @@ class NodeRequestHandler(BaseHTTPRequestHandler):
                    '       <meta http-equiv="refresh" content="5">\n' \
                    '   </head>\n' \
                    '   <body>\n' \
-                   f'       <h2 id="version"> (version: 1.2.1) </h2>\n' \
+                   f'       <h2 id="version"> (version: 1.2.2) </h2>\n' \
                    f'       <h2 id="title">Local scans (client: {self.client_id})</h2>\n' \
                    f'       <h3>Node is {"ONLINE" if self.online[-1] else "OFFLINE"}</h3>' \
                    f'       <button id="getButton">Turn {"offline" if self.online[-1] else "online"}</button>' \

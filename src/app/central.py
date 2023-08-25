@@ -45,7 +45,7 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
                    '   </head>\n'\
                    '   <body>\n'\
                    '       <h2 id="title">Threat tracker (version: '\
-                   '                1.2.1)</h2>\n'\
+                   '                1.2.2)</h2>\n'\
                    f'       <h4>Threat index: {threat_index}</h4>' \
                    f'       <img id="graph" src="{config.CENTRAL_CLOUD_IMAGE}.png">' \
                    f'       <p>' \
