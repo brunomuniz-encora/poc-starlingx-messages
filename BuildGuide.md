@@ -176,24 +176,178 @@ An overall structure for the plugins folder is as follow:
     python3-k8sapp-APP-NAME/
     ├── k8sapp_APP_NAME
     │   ├── common
-    │   │   ├──__init__.py 
-    │   │   └──
+    │   │   ├── __init__.py
+    │   │   └── constants.py
     │   ├── helm
-    │   │   ├──__init__.py 
-    │   │   └──
+    │   │   ├── __init__.py
+    │   │   └── APP_NAME.py
     │   ├── kustomize
-    │   │   ├──__init__.py 
-    │   │   └──
+    │   │   ├── __init__.py
+    │   │   └── kustomize_APP_NAME.py
     │   ├── lifecycle
-    │   │   ├──__init__.py 
-    │   │   └──
+    │   │   ├── __init__.py
+    │   │   └── lifecycle_APP_NAME.py
     │   └── tests
-    │       ├──__init__.py 
-    │       └──
+    │       ├──__init__.py
+    │       └── test.py
     ├── __init__.py
     ├── setup.cfg
     ├── setup.py
     └── 
 ```
+* `constants.py`: This file is used to hold the constants that will be used on
+  the plugins.
 
+* `helm/APP_NAME.py`: File responsible for holding the the functions that 
+  will be used to create the overrides for the application. Usually for every 
+  APP_NAME folder in the FluxCD Manifest, an APP_NAME.py plugins is used to create
+  its overrides.
+
+* `kustomize_APP_NAME.py`: This plugin is used to make changes to the top-level
+  kustomization resource list based on the platform mode.
+
+* `lifecycle_APP_NAME.py`: Responsible to perform lifecycle actions on the application
+  in the lifecycles hooks of the StarlingX system.
+
+* `test.py`: File or files that holds the tests for the application and plugins.
+
+Is important to point that most of the files above, although nice to have, are not
+mandatory. Files like the kustomize and lifecycle plugins will only exist if the 
+application itself requires that these types of actions must be executed.
+
+Files that can be said to be mandatory is the helm/APP_NAME.py plugin, that is
+responsible for creating the overrides for the application on the StarlingX system
+and the commom/constants.py file that will hold the constants used on the plugins.
+An generic example of this files can be seen bellow:
+
+`commom/constants.py`
+
+```shell
+    # Application Name
+    HELM_APP_APP_NAME = 'app-name'
+
+    #Namespace
+    HELM_NS_APP_NAME = 'namespace'
+
+    # Helm: Supported charts:
+    HELM_CHART_APP_NAME = 'helm-chart-name'
+
+    # FluxCD
+    FLUXCD_HELMRELEASE_APP_NAME = 'fluxcd-chart-name'
+```
+
+Note that the constants that will be used here may vary greatly from application to
+application. It is important to analyze the variables that will be used on your 
+application plugins and store them in this file.
+
+
+`helm/APP_NAME.py`
+
+```shell
+
+    from k8sapp_APP_NAME.common import constants
+    from sysinv.common import exception
+    from sysinv.helm import base
+
+    class AppNameHelm(base.BaseHelm):
+        """Class to encapsulate helm operations for the psp rolebinding chart"""
+
+        SUPPORTED_NAMESPACES = base.BaseHelm.SUPPORTED_NAMESPACES + \
+            [constants.HELM_NS_APP_NAME]
+        SUPPORTED_APP_NAMESPACES = {
+            constants.HELM_APP_APP_NAME:
+                base.BaseHelm.SUPPORTED_NAMESPACES + [constants.HELM_NS_APP_NAME],
+        }
+
+        CHART = constants.HELM_CHART_APP_NAME
+
+
+        def get_namespaces(self):
+            return self.SUPPORTED_NAMESPACES
+
+
+        def get_overrides(self, namespace=None):
+        overrides = {
+            constants.HELM_NS_APP_NAME: {
+                # This function returns the full overrides used in the application.
+                # If your application don't have static overrides this functions will
+                # still exist with an empty implementation.
+            }
+        }
+
+        if namespace in self.SUPPORTED_NAMESPACES:
+            return overrides[namespace]
+        elif namespace:
+            raise exception.InvalidHelmNamespace(chart=self.CHART,
+                                                 namespace=namespace)
+        else:
+            return overrides
+```
+
+The above file is an example of the most basic implementation of the plugin. 
+On the example the plugin returns an empty override, usually in this case the full
+oerride will be passed by the user using `system helm-override-update` inside the 
+StarlingX system.
+
+The sysinv folder in the [StarlingX config repository](https://opendev.org/starlingx/config/src/branch/master/sysinv/sysinv/sysinv/sysinv) contains a multitude of functions and variables that may 
+be helpful in the development of the application plugins.
+
+
+For the files setup.cfg and setup. py. The implementation of the `setup.py` file 
+can be as follow:
+
+```shell
+    import setuptools
+
+    setuptools.setup(
+        setup_requires=['pbr>=2.0.0'],
+        pbr=True)
+
+```
+
+The `setup.cfg` file implementation although bigger is easy, as a lot of the 
+implementation follow a recipe:
+
+```shell
+    [metadata]
+    name = k8sapp-APP-NAME
+    summary = StarlingX sysinv extensions for app-name
+    author = <Author or teams name>
+    author-email = <Author or team email>
+    url = <Url for the application>
+    classifier =
+        Operating System :: OS Independent
+        License :: OSI Approved :: MIT License
+        # The language will be exclusive of each application
+        Programming Language :: Python :: 3
+
+    [options]
+    install_requires =
+        # Requirements for the application
+
+    [files]
+    packages =
+        k8sapp_APP_NAME
+
+    [global]
+    setup-hooks =
+        pbr.hooks.setup_hook
+
+    [entry_points]
+    systemconfig.helm_applications =
+        dell-storage = systemconfig.helm_plugins.APP_NAME
+
+    systemconfig.helm_plugins.portieris =
+        001_APP-NAME = k8sapp_APP_NAME.helm.APP_NAME:AppNameHelm
+
+    systemconfig.fluxcd.kustomize_ops =
+        APP_NAME = k8sapp_APP_NAME.kustomize.kustomize_APP_NAME:AppNameFluxCDKustomizeOperator
+
+    systemconfig.app_lifecycle =
+        APP-NAME = k8sapp_dell_storage.lifecycle.lifecycle_APP_NAME:AppNameAppLifecycleOperator
+
+    [bdist_wheel]
+    universal = 1
+
+```
 ## Application structure
