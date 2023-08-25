@@ -130,9 +130,9 @@ You can get an example override file in `packaging/helm/overrides/node-overrides
 helm upgrade -i poc-starlingx-central poc-starlingx-0.4.0.tgz -f stx-packaging/helm/overrides/node-overrides.yaml
 ```
 
-## Runnins in StarlingX
+## Running in StarlingX
 
-Work in progress list of steps to get this running on StarlingX:
+Overall steps:
 
 - Run `make package-stx`: this will create a `poc-starlingx-stx-pkg.tar.gz`.
 - Copy the file above to your StarlingX box: `scp ...`
@@ -143,6 +143,20 @@ Work in progress list of steps to get this running on StarlingX:
 - Upload package with:
   ```shell
   system application-upload poc-starlingx-stx-pkg.tar.gz
+  ```
+- Optionally, generate a Helm overrides file, for example:
+  ```shell
+  env:
+    - name: MODE
+      value: server
+  
+  kube:
+    port: 32100
+    name: poc-starlingx # will affect names of pods and might be useful for multiple app deployments on the same cluster/cloud
+  ```
+- Optionally, apply the new override:
+  ```shell
+  system helm-override-update poc-starlingx poc-starlingx default
   ```
 - Deploy the application with:
   ```shell

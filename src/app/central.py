@@ -19,12 +19,21 @@ from circulartimeseriesqueue import CircularDictQueue
 
 class CentralRequestHandler(BaseHTTPRequestHandler):
     events = multiprocessing.Queue()
-    aggregated_events = CircularDictQueue(100)
+    aggregated_node_events = CircularDictQueue(50)
+    aggregated_server_events = CircularDictQueue(50)
     active_clients = defaultdict(str)
 
     def do_GET(self):
         if self.path.endswith(f'{config.CENTRAL_CLOUD_IMAGE}.png'):
-            content = generate_image_graph(self.aggregated_events)
+            content = generate_image_graph(self.aggregated_node_events)
+
+            self.send_response_only(200)
+            self.send_header('Content-type', 'image/png')
+            self.end_headers()
+
+            self.wfile.write(content)
+        elif self.path.endswith(f'{config.CENTRAL_CLOUD_SERVER_IMAGE}.png'):
+            content = generate_image_graph(self.aggregated_server_events)
 
             self.send_response_only(200)
             self.send_header('Content-type', 'image/png')
@@ -32,10 +41,18 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
 
             self.wfile.write(content)
         elif self.path == '/':
-            threat_index = generate_metrics(self.aggregated_events)
+            threat_index = generate_metrics(self.aggregated_node_events)
             self.send_response_only(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
+
+            html_node_events = '<h4>Accumulated Node Events Timeseries</h4>' \
+                   f'       <img id="graph" src="{config.CENTRAL_CLOUD_IMAGE}.png">'
+
+            html_server_events = '<h4>Server Events Timeseries</h4>' \
+                   f'       <img id="graph" src="{config.CENTRAL_CLOUD_SERVER_IMAGE}.png">'
+
+            html_clients_table = f'{generate_clients_table(self.active_clients)}'
 
             html = '<!DOCTYPE html>\n'\
                    '<html>\n'\
@@ -45,12 +62,11 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
                    '   </head>\n'\
                    '   <body>\n'\
                    '       <h2 id="title">Threat tracker (version: '\
-                   '                1.2.2)</h2>\n'\
+                   '                1.3.0)</h2>\n'\
                    f'       <h4>Threat index: {threat_index}</h4>' \
-                   f'       <img id="graph" src="{config.CENTRAL_CLOUD_IMAGE}.png">' \
-                   f'       <p>' \
-                   f'           {generate_clients_table(self.active_clients)}' \
-                   '        </p>'\
+                   f'       {html_node_events}' \
+                   f'       {html_clients_table}' \
+                   f'       {html_server_events}' \
                    '   </body>\n'\
                    '</html>\n'\
 
@@ -60,24 +76,29 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def do_POST(self):
+        server_date_time = datetime.now().timestamp()
+
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         json_data = json.loads(post_data)
+        json_data['server_datetime'] = server_date_time
 
         self.send_response_only(204)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
 
         version = json_data['version']
-        date_time = datetime.fromtimestamp(json_data['datetime'])
+        event_date_time = datetime.fromtimestamp(json_data['datetime'])
         client_id = json_data['clientid']
         client_ip = json_data['clientip']
         threats = json_data['threats']
 
-        print(f"[{date_time} {client_ip}/{client_id} v{version}] " +
-              f"Threats amount {threats}%, an attack is happening in this node region")
+        print(f"[{server_date_time}: at {event_date_time} from {client_ip}"
+              f"/{client_id}] "
+              f"Threats amount to {threats}% os scans, which is considered an "
+              f"attack in this node's region")
 
-        self.events.put(post_data)
+        self.events.put(json_data)
 
         response = {'message': 'Received POST data successfully',
                     'data': json_data}
@@ -132,21 +153,28 @@ def generate_image_graph(aggregated_events):
     return image_buffer
 
 
-def aggregate_data(events, aggregated_events, active_clients, bucket_size):
+def aggregate_data(events, aggregated_events, aggregated_server_events,
+                   active_clients, bucket_size):
     while True:
-        # Get the amount of nodes with warnings since last read
-        warnings = events.qsize()
-        data = defaultdict(int)
+        # Get the number of events on the queue (since last read)
+        number_of_events = events.qsize()
+        node_events = defaultdict(int)
+        server_events = defaultdict(int)
         active_clients.clear()
 
         # Dequeue read elements
-        for _ in range(0, warnings):
-            event = json.loads(events.get())
+        for _ in range(0, number_of_events):
+            event = events.get()
 
-            # Aggregate event count
+            # Aggregate event count based on event timestamp
             aggregate_timestamp = \
                 math.floor(event["datetime"] / bucket_size) * bucket_size
-            data[aggregate_timestamp] += 1
+            node_events[aggregate_timestamp] += 1
+
+            # Aggregate event count, but based on server timestamp.
+            aggregate_server_timestamp = \
+                math.floor(event["server_datetime"] / bucket_size) * bucket_size
+            server_events[aggregate_server_timestamp] += 1
 
             # Set active clients info
             active_clients[event["clientid"]] = {
@@ -155,8 +183,12 @@ def aggregate_data(events, aggregated_events, active_clients, bucket_size):
                 'clientip': event["clientip"]
             }
 
-        for key, value in data.items():
+        for key, value in node_events.items():
             aggregated_events.enqueue(int(key), int(value))
+
+        for key, value in server_events.items():
+            aggregated_server_events.enqueue(int(key), int(value))
+
 
         time.sleep(bucket_size)
 
@@ -176,7 +208,8 @@ def run_central_cloud(server_class=HTTPServer,
                                            args=(server_class, handler_class, port))
     aggregation_service = threading.Thread(target=aggregate_data,
                                             args=(handler_class.events,
-                                                  handler_class.aggregated_events,
+                                                  handler_class.aggregated_node_events,
+                                                  handler_class.aggregated_server_events,
                                                   handler_class.active_clients,
                                                   bucket_size))
 
