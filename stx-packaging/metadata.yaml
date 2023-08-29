@@ -6,8 +6,7 @@ maintain_user_overrides: true
 maintain_attributes: true
 
 behavior:
-  platform_managed_app: yes
-  desired_state: applied
+  platform_managed_app: no
 
 upgrades:
   auto_update: true
