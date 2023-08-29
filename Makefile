@@ -25,6 +25,9 @@ package-stx: package-helm package-plugin
 	rm -r stx-packaging/charts/
 	rm -r stx-packaging/plugins/
 
+###########################################################
+### Debian packaging (below) is here just for reference ###
+###########################################################
 
 TEMP_DIR := $(shell mktemp -d)
 DEBIAN_DIR = $(TEMP_DIR)/DEBIAN

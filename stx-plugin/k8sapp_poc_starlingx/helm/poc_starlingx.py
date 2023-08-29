@@ -33,7 +33,6 @@ class PocStarlingxHelm(base.BaseHelm):
                 "kube": {
                     "port": 31234,
                     "replicas": 1,
-                    "secret": "my-docker-reg-secret",
                     "name": "poc-starlingx"
                 }
             },
