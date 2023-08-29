@@ -35,7 +35,7 @@ application in the format expected by StarlingX:
        rm -r stx-packaging/plugins/
    ```
     
-   [//]: # (TODO: Add video/gif of the `make package-stx` running)
+   ![make package-stx gif](README/make-pkg.gif)
     
    > _NOTE_: The format expected by StarlingX is explained in details in the 
    > [BuildGuide.md](BuildGuide.md).
@@ -45,16 +45,16 @@ file to the StarlingX controller(s) where you want the app(s) to run. Then you
 can simply run:
    
    ```shell
-   system application-upload /path/to/poc-starlingx-stx-pkg.tar.gz
+   source /etc/platform/openrc; system application-upload /path/to/poc-starlingx-stx-pkg.tar.gz
    ```
-   [//]: # (TODO: add video here)
+   ![upload package-stx gif](README/upload-pkg.gif)
 3. This application works with two different personalities, controlled via
 environment variables.
    1. If you are deploying the app with the `central` personality, simply run:
       ```shell
-      system application-apply poc-starlingx
+      source /etc/platform/openrc; system application-apply poc-starlingx
       ```
-      [//]: # (TODO: add video here)
+      ![apply app gif](README/apply-app.gif)
    2. If you are deploying the app with the `node` personality:
       1. generate a Helm overrides file called `node-overrides.yaml`:
       ```shell
@@ -67,12 +67,12 @@ environment variables.
       [//]: # (TODO: add video here)
       2. Apply the new override:
       ```shell
-      system helm-override-update --values /path/to/node-overrides.yaml poc-starlingx poc-starlingx default
+      source /etc/platform/openrc; system helm-override-update --values /path/to/node-overrides.yaml poc-starlingx poc-starlingx default
       ```
       [//]: # (TODO: add video here)
       3. Deploy the application with:
       ```shell
-      system application-apply poc-starlingx
+      source /etc/platform/openrc; system application-apply poc-starlingx
       ```
       [//]: # (TODO: add video here)
 
