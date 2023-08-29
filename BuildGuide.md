@@ -163,7 +163,8 @@ application, but a few files must exist for the StarlingX system to
 deploy an application as an system application. For a complete overview
 of different plugins used in the various applications available now for
 the StarlingX you may check the various applications available in the
-[StarlingX applications repository](https://opendev.org/starlingx?sort=recentupdate&language=&q=app). Some of the applications are:
+[StarlingX applications repository](https://opendev.org/starlingx?sort=recentupdate&language=&q=app).
+Some of the applications are:
 
 - [Certificate Manager Application](https://opendev.org/starlingx/cert-manager-armada-app/src/branch/master/python3-k8sapp-cert-manager/k8sapp_cert_manager/k8sapp_cert_manager)
 - [Portieris Application](https://opendev.org/starlingx/portieris-armada-app/src/branch/master/python3-k8sapp-portieris/k8sapp_portieris/k8sapp_portieris)
@@ -200,27 +201,27 @@ An overall structure for the plugins folder is as follow:
 
 * `helm/APP_NAME.py`: File responsible for holding the the functions that 
   will be used to create the overrides for the application. Usually for every 
-  APP_NAME folder in the FluxCD Manifest, an APP_NAME.py plugins is used to create
-  its overrides.
+  APP_NAME folder in the FluxCD Manifest, an APP_NAME.py plugins is used to 
+  create its overrides.
 
 * `kustomize_APP_NAME.py`: This plugin is used to make changes to the top-level
   kustomization resource list based on the platform mode.
 
-* `lifecycle_APP_NAME.py`: Responsible to perform lifecycle actions on the application
-  in the lifecycles hooks of the StarlingX system.
+* `lifecycle_APP_NAME.py`: Responsible to perform lifecycle actions on the
+  application in the lifecycles hooks of the StarlingX system.
 
 * `test.py`: File or files that holds the tests for the application and plugins.
 
-Is important to point that most of the files above, although nice to have, are not
-mandatory. Files like the kustomize and lifecycle plugins will only exist if the 
-application itself requires that these types of actions must be executed.
+Is important to point that most of the files above, although nice to have, are
+not mandatory. Files like the kustomize and lifecycle plugins will only exist
+if the application itself requires that these types of actions must be executed.
 
 Files that can be said to be mandatory is the helm/APP_NAME.py plugin, that is
-responsible for creating the overrides for the application on the StarlingX system
-and the commom/constants.py file that will hold the constants used on the plugins.
-An generic example of this files can be seen bellow:
+responsible for creating the overrides for the application on the StarlingX
+system and the common/constants.py file that will hold the constants used on
+the plugins. An generic example of this files can be seen bellow:
 
-`commom/constants.py`
+`common/constants.py`
 
 ```shell
     # Application Name
@@ -236,9 +237,9 @@ An generic example of this files can be seen bellow:
     FLUXCD_HELMRELEASE_APP_NAME = 'fluxcd-chart-name'
 ```
 
-Note that the constants that will be used here may vary greatly from application to
-application. It is important to analyze the variables that will be used on your 
-application plugins and store them in this file.
+Note that the constants that will be used here may vary greatly from application
+to application. It is important to analyze the variables that will be used on
+your application plugins and store them in this file.
 
 
 `helm/APP_NAME.py`
@@ -269,9 +270,9 @@ application plugins and store them in this file.
         def get_overrides(self, namespace=None):
         overrides = {
             constants.HELM_NS_APP_NAME: {
-                # This function returns the full overrides used in the application.
-                # If your application don't have static overrides this functions will
-                # still exist with an empty implementation.
+                # This function returns the full overrides used in the
+                # application. If your application don't have static overrides
+                # this functions will still exist with an empty implementation.
             }
         }
 
@@ -284,17 +285,17 @@ application plugins and store them in this file.
             return overrides
 ```
 
-The above file is an example of the most basic implementation of the plugin. 
-On the example the plugin returns an empty override, usually in this case the full
-oerride will be passed by the user using `system helm-override-update` inside the 
-StarlingX system.
+The above file is an example of the most basic implementation of the plugin.
+On the example the plugin returns an empty override, usually in this case the
+full override will be passed by the user using `system helm-override-update`
+inside the StarlingX system.
 
-The sysinv folder in the [StarlingX config repository](https://opendev.org/starlingx/config/src/branch/master/sysinv/sysinv/sysinv/sysinv) contains a multitude of functions and variables that may 
-be helpful in the development of the application plugins.
+The sysinv folder in the [StarlingX config repository](https://opendev.org/starlingx/config/src/branch/master/sysinv/sysinv/sysinv/sysinv)
+contains a multitude of functions and variables that may be helpful in the
+development of the application plugins.
 
-
-For the files setup.cfg and setup. py. The implementation of the `setup.py` file 
-can be as follow:
+For the files setup.cfg and setup. py. The implementation of the `setup.py`
+file can be as follow:
 
 ```shell
     import setuptools
@@ -337,8 +338,10 @@ implementation follow a recipe:
     systemconfig.helm_applications =
         dell-storage = systemconfig.helm_plugins.APP_NAME
 
-    systemconfig.helm_plugins.portieris =
+    systemconfig.helm_plugins.APP_NAME =
         001_APP-NAME = k8sapp_APP_NAME.helm.APP_NAME:AppNameHelm
+        # If the application requires more than one plugin in the helm folder
+        # to generate the overrides, the other files must also be listed here.
 
     systemconfig.fluxcd.kustomize_ops =
         APP_NAME = k8sapp_APP_NAME.kustomize.kustomize_APP_NAME:AppNameFluxCDKustomizeOperator
@@ -350,4 +353,7 @@ implementation follow a recipe:
     universal = 1
 
 ```
+
+Finally the `test.py` file, although not mandatory to have, it is considered a
+good coding practice to test the application and its plugins.
 ## Application structure
