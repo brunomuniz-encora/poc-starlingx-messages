@@ -193,8 +193,7 @@ An overall structure for the plugins folder is as follow:
     │       └── test.py
     ├── __init__.py
     ├── setup.cfg
-    ├── setup.py
-    └── 
+    └── setup.py
 ```
 * `constants.py`: This file is used to hold the constants that will be used on
   the plugins.
@@ -357,3 +356,89 @@ implementation follow a recipe:
 Finally the `test.py` file, although not mandatory to have, it is considered a
 good coding practice to test the application and its plugins.
 ## Application structure
+
+The final structure for the application is composed of the plugins, the FluxCD
+manifest and a metadata.yml file inside the folder containing the manifest.
+An application structure is as follow:
+
+```shell
+    APP-NAME/
+    ├── stx-APP-NAME-helm
+    │   ├── fluxcd-manifests/
+    │   └── metadata.yaml
+    └── python3-k8sapp-APP-NAME/
+```
+
+This specific structure is a simplified format that can be builded outside of a
+StarlingX build environment. For a more robust and StarlingX build environment
+centered structure refer to the [official wiki page](https://wiki.openstack.org/wiki/StarlingX/Containers/HowToAddNewFluxCDAppInSTX)
+with instructions on how to create and add an application to the StarlingX
+repository.
+
+The metadata.yaml is necessary to enable some features of the StarlingX
+environment. The template for this file can be seen bellow:
+
+```shell
+    app_name: <name>
+    app_version: <version>
+    upgrades:
+      auto_update: <true/false/yes/no>
+      update_failure_no_rollback: <true/false/yes/no>
+      from_versions:
+      - <version.1>
+      - <version.2>
+    supported_k8s_version:
+      minimum: <version>
+      maximum: <version>
+    supported_releases:
+      <release>:
+      - <patch.1>
+      - <patch.2>
+      ...
+    repo: <helm repo> - optional: defaults to HELM_REPO_FOR_APPS
+    disabled_charts: - optional: charts default to enabled
+    - <chart name>
+    - <chart name>
+    ...
+    maintain_user_overrides: <true|false>
+      - optional: defaults to false. Over an app update any user overrides are
+        preserved for the new version of the application
+    ...
+    behavior: - optional: describes the app behavior
+        platform_managed_app: <true/false/yes/no> - optional: when absent behaves as false
+        desired_state: <uploaded/applied> - optional: state the app should reach
+        evaluate_reapply: - optional: describe the reapply evaluation behaviour
+            after: - optional: list of apps that should be evaluated before the current one
+              - <app_name.1>
+              - <app_name.2>
+            triggers: - optional: list of what triggers the reapply evaluation
+              - type: <key in APP_EVALUATE_REAPPLY_TRIGGER_TO_METADATA_MAP>
+                filters: - optional: list of field:value, that aid filtering
+                    of the trigger events. All pairs in this list must be
+                    present in trigger dictionary that is passed in
+                    the calls (eg. trigger[field_name1]==value_name1 and
+                    trigger[field_name2]==value_name2).
+                    Function evaluate_apps_reapply takes a dictionary called
+                    'trigger' as parameter. Depending on trigger type this
+                    may contain custom information used by apps, for example
+                    a field 'personality' corresponding to node personality.
+                    It is the duty of the app developer to enhance existing
+                    triggers with the required information.
+                    Hard to obtain information should be passed in the trigger.
+                    To use existing information it is as simple as defining
+                    the metadata.
+                  - <field_name.1>: <value_name.1>
+                  - <field_name.2>: <value_name.2>
+                filter_field: <field_name> - optional: field name in trigger
+                              dictionary. If specified the filters are applied
+                              to trigger[filter_field] sub-dictionary instead
+                              of the root trigger dictionary.
+    apply_progress_adjust: - optional: Positive integer value by which to adjust the
+                                       percentage calculations for the progress of
+                                       a monitoring task.
+                                       Default value is zero (no adjustment)
+```
+
+For a better understanding of each of the attributes in this yaml file refer to
+[this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml)
+in order to define the necessary attributes needed for your application.
