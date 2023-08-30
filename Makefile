@@ -1,5 +1,25 @@
 VERSION := $(shell cat VERSION)
 
+#################################
+### Docker packaging of ./src ###
+#################################
+
+docker-build:
+	echo "Attention, this is just a helper, it expects 'brunomuniz' to be logged in"
+	echo "We might automate this, if necessary, in the future"
+	echo "Alright? (yes)"
+	read y
+	docker build -t brunomuniz/poc-starlingx:$(VERSION) .
+
+docker-push-latest: docker-build
+	docker tag brunomuniz/poc-starlingx:$(VERSION) brunomuniz/poc-starlingx:latest
+	docker push brunomuniz/poc-starlingx:$(VERSION)
+	docker push brunomuniz/poc-starlingx:latest
+
+###############################
+### StarlingX App packaging ###
+###############################
+
 CHART_NAME := $(shell cat helm-chart/Chart.yaml | grep name | awk -F ': ' '{print $$2}')
 CHART_VERSION := $(shell cat helm-chart/Chart.yaml | grep -E '^version' | awk -F ': ' '{print $$2}')
 
