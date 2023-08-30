@@ -4,6 +4,8 @@
 This guide describes the steps to deploy an application as
 a StarlingX application.
 
+[//]: # (TODO: needs a brief explanation of the moving parts to compose a "StarlingX Application")
+
 - [FluxCD Manifest](#fluxcd-manifest)
 - [Plugins](#plugins)
 - [Application structure](#application-structure)

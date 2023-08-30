@@ -6,6 +6,11 @@ This is a very basic app that act as either a `central` or a `node`:
 - `node`: generates random data (threats); sends a message to a `central` when
   threats are above a given threshold.
 
+Take a look at the [Demo](Demo.md) (10-minutes reading).
+
+You can also understand how a StarlingX Application is packaged in the
+[BuildGuide](BuildGuide.md).
+  
 ## Quick start
 
 For a local Demo, simply do:
