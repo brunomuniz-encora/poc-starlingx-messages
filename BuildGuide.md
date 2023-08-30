@@ -464,47 +464,53 @@ Alternatively you can use the [tis-repo repository](https://opendev.org/starling
 to deploy the StarlingX build environment using Vagrant.
 
 Although the build environment can be said to be the official way to build a
-StarlingX application, some applications can be build using a few shell commands.
+StarlingX application, some applications can be built using a few shell commands.
 
 Bellow is a list with the necessary steps and commands to build your
 application package.
 
 ```shell
+    export APP_NAME="app-name"
+    export APP_NAME_2="app_name"
+```
+
+```shell
+
     # Package the helm charts
   	  helm package helm-chart/
 
     # Package the plugins via wheel
-      cd python3-k8sapp-APP-NAME; \
+      cd python3-k8sapp-${APP_NAME}; \
   	  python3 setup.py bdist_wheel \
-  	  --universal -d k8sapp_APP_NAME
+  	  --universal -d k8sapp_${APP_NAME_2}
 
 
     # Remove the files created during the execution of the packaging command
-  	  rm -r python3-k8sapp-APP-NAME/build/ \
-      python3-k8sapp-APP-NAME/k8sapp_APP_NAME.egg-info/ \
-      python3-k8sapp-APP-NAME/AUTHORS python3-k8sapp-APP-NAME/ChangeLog
+  	  rm -r python3-k8sapp-${APP_NAME}/build/ \
+      python3-k8sapp-${APP_NAME}/k8sapp_${APP_NAME_2}.egg-info/ \
+      python3-k8sapp-${APP_NAME}/AUTHORS python3-k8sapp-${APP_NAME}/ChangeLog
     
     # Package the application
       # Create folders inside stx-APP-NAME-helm/ for the chart and plugin packages
-      mkdir -p stx-APP-NAME-helm/charts
-      mkdir -p stx-APP-NAME-helm/plugins
+      mkdir -p stx-${APP_NAME}-helm/charts
+      mkdir -p stx-${APP_NAME}-helm/plugins
 
       # Move the helm charts package to the stx-APP-NAME-helm/charts folder
-      mv APP_NAME*.tgz stx-APP-NAME-helm/charts/
+      mv ${APP_NAME_2}*.tgz stx-${APP_NAME}-helm/charts/
 
       # Move the plugin wheel package to the stx-APP-NAME-helm/plugins folder
-      mv python3-k8sapp-APP-NAME/k8sapp_APP_NAME/k8sapp_APP_NAME*.whl \
-      stx-APP-NAME-helm/plugins
+      mv python3-k8sapp-${APP_NAME}/k8sapp_APP_NAME${APP_NAME_2}k8sapp_${APP_NAME_2}*.whl \
+      stx-${APP_NAME}-helm/plugins
 
       # Save a md5 checksum
-      cd stx-APP-NAME-helm; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
+      cd stx-${APP_NAME}-helm; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
 
       # Build the application package
-      cd stx-APP-NAME-helm; tar -czvf ../APP_NAME_pkg.tar.gz *
+      cd stx-${APP_NAME}-helm; tar -czvf ../${APP_NAME_2}_pkg.tar.gz *
 
       # remove all extra the folders and files created during packaging
-      rm stx-APP-NAME-helm/checksum.md5
-      rm -r stx-APP-NAME-helm/charts/
-      rm -r stx-APP-NAME-helm/plugins/
+      rm stx-${APP_NAME}-helm/checksum.md5
+      rm -r stx-${APP_NAME}-helm/charts/
+      rm -r stx-${APP_NAME}-helm/plugins/
 
 ```
