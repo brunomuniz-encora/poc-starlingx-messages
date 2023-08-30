@@ -11,6 +11,11 @@ a StarlingX application.
 - [Application structure](#application-structure)
 - [Packaging the application](#packaging-the-application)
 
+## Prerequisites
+
+[//]: # (TODO: need to state that the app needs to be designed to run in Kubernetes and "Helmerized")
+[//]: # (TODO: and maybe other prerequisites)
+
 ## FluxCD Manifest
 
 The FluxCD Manifest for the StarlingX environment must follow a specific
