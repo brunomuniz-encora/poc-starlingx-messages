@@ -9,6 +9,7 @@ a StarlingX application.
 - [FluxCD Manifest](#fluxcd-manifest)
 - [Plugins](#plugins)
 - [Application structure](#application-structure)
+- [Packaging the application](#packaging-the-application)
 
 ## FluxCD Manifest
 
@@ -348,7 +349,7 @@ implementation follow a recipe:
         APP_NAME = k8sapp_APP_NAME.kustomize.kustomize_APP_NAME:AppNameFluxCDKustomizeOperator
 
     systemconfig.app_lifecycle =
-        APP-NAME = k8sapp_dell_storage.lifecycle.lifecycle_APP_NAME:AppNameAppLifecycleOperator
+        APP-NAME = k8sapp_APP_NAME.lifecycle.lifecycle_APP_NAME:AppNameAppLifecycleOperator
 
     [bdist_wheel]
     universal = 1
@@ -365,6 +366,7 @@ An application structure is as follow:
 
 ```shell
     APP-NAME/
+    ├── helm-charts/
     ├── stx-APP-NAME-helm
     │   ├── fluxcd-manifests/
     │   └── metadata.yaml
@@ -376,6 +378,9 @@ StarlingX build environment. For a more robust and StarlingX build environment
 centered structure refer to the [official wiki page](https://wiki.openstack.org/wiki/StarlingX/Containers/HowToAddNewFluxCDAppInSTX)
 with instructions on how to create and add an application to the StarlingX
 repository.
+
+The helm-charts folder contains the helm charts necessary to deploy your
+application on kubernetes.
 
 The metadata.yaml is necessary to enable some features of the StarlingX
 environment. The template for this file can be seen bellow:
@@ -444,3 +449,57 @@ environment. The template for this file can be seen bellow:
 For a better understanding of each of the attributes in this yaml file refer to
 [this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml)
 in order to define the necessary attributes needed for your application.
+
+## Packaging the application
+
+As said before, the Starlingx offers an environment to build applications and 
+the system ISO. In order to deploy this environment you can follow the 
+instructions in [this link](https://wiki.openstack.org/wiki/StarlingX/DebianBuildEnvironment).
+Alternatively you can use the [tis-repo repository](https://opendev.org/starlingx/tis-repo)
+to deploy the StarlingX build environment using Vagrant.
+
+Although the build environment can be said to be the official way to build a
+StarlingX application, some applications can be build using a few shell commands.
+
+Bellow is a list with the necessary steps and commands to build your
+application package.
+
+```shell
+    # Package the helm charts
+  	  helm package helm-chart/
+
+    # Package the plugins via wheel
+      cd python3-k8sapp-APP-NAME; \
+  	  python3 setup.py bdist_wheel \
+  	  --universal -d k8sapp_APP_NAME
+
+
+    # Remove the files created during the execution of the packaging command
+  	  rm -r python3-k8sapp-APP-NAME/build/ \
+      python3-k8sapp-APP-NAME/k8sapp_APP_NAME.egg-info/ \
+      python3-k8sapp-APP-NAME/AUTHORS python3-k8sapp-APP-NAME/ChangeLog
+    
+    # Package the application
+      # Create folders inside stx-APP-NAME-helm/ for the chart and plugin packages
+      mkdir -p stx-APP-NAME-helm/charts
+      mkdir -p stx-APP-NAME-helm/plugins
+
+      # Move the helm charts package to the stx-APP-NAME-helm/charts folder
+      mv APP_NAME*.tgz stx-APP-NAME-helm/charts/
+
+      # Move the plugin wheel package to the stx-APP-NAME-helm/plugins folder
+      mv python3-k8sapp-APP-NAME/k8sapp_APP_NAME/k8sapp_APP_NAME*.whl \
+      stx-APP-NAME-helm/plugins
+
+      # Save a md5 checksum
+      cd stx-APP-NAME-helm; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
+
+      # Build the application package
+      cd stx-APP-NAME-helm; tar -czvf ../APP_NAME_pkg.tar.gz *
+
+      # remove all extra the folders and files created during packaging
+      rm stx-APP-NAME-helm/checksum.md5
+      rm -r stx-APP-NAME-helm/charts/
+      rm -r stx-APP-NAME-helm/plugins/
+
+```
