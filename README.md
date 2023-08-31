@@ -75,3 +75,39 @@ Overall steps (example):
   ```shell
   system application-apply poc-starlingx
   ```
+
+### Optional overrides
+
+This application supports others overrides and variables.
+The full available override can be seen bellow.
+
+   ```shell
+   env:
+     - name: MODE
+       value: <node/central>
+     - name: SERVER
+       value: <central IP address:port>
+     - name: PORT
+       value: <"container-port"> # Environment variable that determines which 
+       # port the application will listen inside the container (note that the 
+       # port value must be in double quotes)
+     - name: BUCKET_SIZE
+       value: <time-in-seconds> # Value that determines how many seconds the
+       # central will accumulate data before it process them 
+     - name: THRESHOLD
+       value: <threshold> # Determines the threshold value in which the node
+       # will notify the central if the generated value is above the threshold 
+
+   image:
+     repository: <local-or-remote-repository>
+     tag: <tag>
+     containerPort: <container-port> # Determines which port the kubernetes will
+     # look for the application inside the container (must be the same as the 
+     # environment variable above)
+
+   kube:
+     port: <system-port> # Determines which port will be exposed on the kubernetes cluster host
+     replicas: <number-of-replicas>
+     secret: <local-registry-secret>
+     name: <kubernetes-deployment-name>
+   ```
