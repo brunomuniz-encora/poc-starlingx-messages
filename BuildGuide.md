@@ -45,10 +45,12 @@ different `helmrelease.yaml` for each one. An example of this can be
 seen in the [Dell Storage app](https://opendev.org/starlingx/app-dell-storage/src/branch/master/stx-dell-storage-helm/stx-dell-storage-helm/fluxcd-manifests)
 for StarlingX.
 
-#### kustomization.yaml
+### The `flux-manifests` (root) directory
 
-Each StarlingX App must have a `kustomization.yaml` file that contains the
-resources/dependencies to apply.
+#### `kustomization.yaml`
+
+A `kustomization.yaml` file is required in the `flux-manifests` (root) directory
+, tying all the different Helm releases together. For example:
 
 ```shell
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -57,7 +59,11 @@ namespace: <kubernetes-namespace>
 resources: # the chart directories that need to be applied
   - base
   - APP-NAME
+  - ...
 ```
+
+>_NOTE_: each "APP_NAME" directory and the `base` directory require its own
+`kustomization.yaml` file, which will be explained in the sections below.
 
 ### The base chart directory
 
@@ -200,7 +206,7 @@ Here are some examples:
 - [Dell Storage Application](https://opendev.org/starlingx/app-dell-storage/src/branch/master/python3-k8sapp-dell-storage/k8sapp_dell_storage/k8sapp_dell_storage)
 - [Vault Application](https://opendev.org/starlingx/vault-armada-app/src/branch/master/python3-k8sapp-vault/k8sapp_vault/k8sapp_vault)
 
-The minimal suggested structure for the `plugins` folder is as follows:
+An overall suggested structure for the `plugins` folder is as follows:
 
 ```shell
 python3-k8sapp-APP-NAME/

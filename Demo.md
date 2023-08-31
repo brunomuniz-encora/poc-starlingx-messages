@@ -1,6 +1,7 @@
 # Poc-StarlingX
 
-This is an application developed as a proof of concept for the StarlingX system.
+This is an application developed as a proof of concept for the StarlingX
+Platform.
 
 The application simulates a network of anti-virus scanners running independently
 and geographically monitoring for threats. When the scan detects threats above 
