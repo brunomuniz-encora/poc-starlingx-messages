@@ -1,5 +1,18 @@
 # Poc-StarlingX
 
+This is an application developed as a proof of concept for the StarlingX system.
+
+The application simulates a network of anti-virus scanners running independently
+and geographically monitoring for threats. When the scan detects threats above 
+a threshold it reports to a central instance responsible for receiving all the 
+reports, process and store them, and output the information in a time series graph. 
+
+The application works as a system that either generates information or receives
+information from another instance of the application. This is understood as
+the application having two different personalities, the `node` which is the one
+that generates the information, and the `central` that receives the messages.
+
+
 ## Deploying PoC-StarlingX as a StarlingX Application
 
 1. To deploy the PoC-StarlingX app as a StalingX Application, you first need to
@@ -41,14 +54,14 @@ application in the format expected by StarlingX:
    > [BuildGuide.md](BuildGuide.md).
 
 2. After packaging the app, send the generated `poc-starlingx-stx-pkg.tar.gz`
-file to the StarlingX controller(s) where you want the app(s) to run. Then you
+file to the StarlingX active controller(s) where you want the app(s) to run. Then you
 can simply run:
    
    ```shell
    source /etc/platform/openrc; system application-upload /path/to/poc-starlingx-stx-pkg.tar.gz
    ```
    ![upload package-stx gif](README/upload-pkg.gif)
-3. This application works with two different personalities, controlled via
+3. This application has two different personalities, controlled via
 environment variables.
    1. If you are deploying the app with the `central` personality, simply run:
       ```shell
@@ -62,7 +75,7 @@ environment variables.
         - name: MODE
           value: node
         - name: SERVER
-          value: <central IP address>
+          value: <central IP address:port>
       ```
       2. Apply the new override:
       ```shell
@@ -73,6 +86,7 @@ environment variables.
       source /etc/platform/openrc; system application-apply poc-starlingx
       ```
       ![apply node gif](README/apply-node.gif)
+
 
 ## Application Demo
 
