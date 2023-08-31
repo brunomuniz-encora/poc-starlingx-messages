@@ -102,7 +102,7 @@ more frequently. `Node`s 3 and 4 at the bottom are running with a threshold of
 The `central` (to the right) presents the following information:
 
 - a timeseries of the processed events (based on the timestamp when the event
-was created in the `node`);
+was created on the `node`);
 - a constantly updated list of recently connected `nodes`;
 - a timeseries of received events (based on `central`'s timestamp when the event
 was received).
@@ -115,8 +115,10 @@ the `central`.
 [//]: # (TODO Add screenshot of the whole thing here.)
 
 When a `node` is, for any reason, not able to send data to the `central`, it
-continues to generate and accumulate data. This offline status can be simulated
-with the click of a button in this demonstration.
+continues to generate and accumulate data. 
+
+> _NOTE_: This offline status can be simulated with the click of a button in
+this demonstration.
 
 [//]: # (TODO: turning nodes offilne and showing how it reflects on the timeseries)
 
@@ -124,8 +126,8 @@ Notice how the number of reported events has gone down from around X to Y.
 
 [//]: # (TODO: update X and Y accoding to recording)
 
-When the `node` is able to contact the central again - simulated by the click of
-a button in this demonstration, accumulated data is sent to the `central`.
+When the `node` is able to reach the central again, accumulated data on the node
+is then sent to the `central`.
 
 [//]: # (TODO turn nodes online again and show how it reflects on both central's graphs)
 
