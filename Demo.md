@@ -76,23 +76,47 @@ environment variables.
 
 ## Application Demo
 
-The `central` is constantly receiving updates from `node`s, which can be seen
-below by the timeseries graphs and the list of recently connected clients.
+[//]: # (TODO this whole text needs proofreading)
 
-[//]: # (TODO Add screenshot here.)
+Below you are seeing a `central` running on the right side of the screen and 4
+`node`s running on the left side. `Node`s 1 and 2, on the top, are running with
+a threshold of 5%, which means they are more sensitive, notifying the `central`
+more frequently. `Node`s 3 and 4 at the bottom are running with a threshold of
+20%.
 
-The `node` is constantly generating new data that, if above a given threshold,
-is sent to the `central`. Points above the red line in the timeseries below
-represent the data that is sent to the `central`.
+The `central` (to the right) presents the following information:
 
-[//]: # (TODO Add screenshot here.)
+- a timeseries of the processed events (based on the timestamp when the event
+was created in the `node`);
+- a constantly updated list of recently connected `nodes`;
+- a timeseries of received events (based on `central`'s timestamp when the event
+was received).
+
+All 4 `node`s, to the left, are constantly generating new data which, if above
+the configured threshold for the `node`, is sent to the `central`. Points above
+the red line in the timeseries represent the data from each node that is sent to
+the `central`.
+
+[//]: # (TODO Add screenshot of the whole thing here.)
 
 When a `node` is, for any reason, not able to send data to the `central`, it
-continues to generate data. When the `node` is able to contact the central again
-, past data is sent. The `central` receives past data and process it accordingly
-, showing in the timeseries the actual timestamps of the events as well as
-another timeseries with the timestamp of when data is received, showing a burst
-of events received when the `node` became available again.
+continues to generate and accumulate data. This offline status can be simulated
+with the click of a button in this demonstration.
+
+[//]: # (TODO: turning nodes offilne and showing how it reflects on the timeseries)
+
+Notice how the number of reported events has gone down from around X to Y.
+
+[//]: # (TODO: update X and Y accoding to recording)
+
+When the `node` is able to contact the central again - simulated by the click of
+a button in this demonstration, accumulated data is sent to the `central`.
+
+[//]: # (TODO turn nodes online again and show how it reflects on both central's graphs)
+
+Processing of the new data by the `central` is shown as a spike of events
+received (second graph on the `central`'s admin page). The events data, on the
+other hand, are reprocessed and the first graph is updated accordingly.
 
 ## The whole process
 

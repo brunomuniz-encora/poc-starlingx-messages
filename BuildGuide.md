@@ -1,11 +1,8 @@
-
 # Deploy an application as a StarlingX app
 
-This guide describes the steps to deploy an application as
-a StarlingX application.
+This guide describes the steps to deploy an application as a **StarlingX App**.
 
-[//]: # (TODO: needs a brief explanation of the moving parts to compose a "StarlingX Application")
-
+- [Prerequisites](#prerequisites)
 - [FluxCD Manifest](#fluxcd-manifest)
 - [Plugins](#plugins)
 - [Application structure](#application-structure)
@@ -13,32 +10,35 @@ a StarlingX application.
 
 ## Prerequisites
 
-As the StarlingX system runs atop a kubernetes structure, for an application
-to be deployed as an StarlingX app it needs to be design so it can run on
-kubernetes and be deployable via helm charts.
+As the StarlingX Platform manages a distributed Kubernetes cluster, for an
+application to be deployed as a StarlingX App it needs to be designed so it can
+run on [Kubernetes](kubernetes.io). 
 
-[//]: # (TODO: need to state that the app needs to be designed to run in Kubernetes and "Helmerized")
-[//]: # (TODO: and maybe other prerequisites)
+Additionally, it needs to provide a [Helm Chart](helm.sh) which will be managed
+via [Flux](fluxcd.io).
 
 ## FluxCD Manifest
 
-The FluxCD Manifest for the StarlingX environment must follow a specific
-structure. The overall, generic structure of a StarlingX FluxCD Manifest
-is as follow:
+The FluxCD Manifest for the StarlingX App must follow a specific structure.
+The overall, generic structure of a StarlingX App's FluxCD Manifest is as 
+follows:
 
-  ```shell
-  fluxcd-manifests/
-  ├── base
-  │   ├── helmrepository.yaml
-  │   ├── kustomization.yaml
-  │   └── namespace.yaml
-  ├── kustomization.yaml
-  └── APP-NAME
-      ├── helmrelease.yaml
-      ├── kustomization.yaml
-      ├── APP-NAME-static-overrides.yaml
-      └── APP-NAME-system-overrides.yaml
-  ```
+> _NOTE_: `APP-NAME` is a placeholder and should change according to your app's 
+name and/or dependencies that your app may need.
+
+```shell
+fluxcd-manifests/
+├── base
+│   ├── helmrepository.yaml
+│   ├── kustomization.yaml
+│   └── namespace.yaml
+├── kustomization.yaml
+└── APP-NAME
+    ├── helmrelease.yaml
+    ├── kustomization.yaml
+    ├── APP-NAME-static-overrides.yaml
+    └── APP-NAME-system-overrides.yaml
+```
 
 An application may make use of multiple folders of APP-NAME containing
 different `helmrelease.yaml` for each one. An example of this can be
@@ -47,325 +47,340 @@ for StarlingX.
 
 #### kustomization.yaml
 
-Each layer must have a `kustomization.yaml` file that contains the
-resources to apply.
+Each StarlingX App must have a `kustomization.yaml` file that contains the
+resources/dependencies to apply.
 
-  ```shell
-  apiVersion: kustomize.config.k8s.io/v1beta1
-  kind: Kustomization
-  namespace: <kubernetes-namespace>
-  resources: # the chart directories that need to be applied
-    - base
-    - APP-NAME
-  ```
+```shell
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: <kubernetes-namespace>
+resources: # the chart directories that need to be applied
+  - base
+  - APP-NAME
+```
 
-### The base chart directory contains the following:
+### The base chart directory
+
+The base chart directory contains the following:
 
 #### base/helmrepository.yaml
 
-  ```shell
-  # HelmRepository YAML for StarlingX helm repository.
-  apiVersion: source.toolkit.fluxcd.io/v1beta1
-  kind: HelmRepository
-  metadata:
-    name: stx-platform
-  spec:
-    url: http://<cluster_host_ip>:8080/helm_charts/stx-platform
-    # The cluster host ip is 192.168.206.1 if it wasn't changed during
-    # bootstrap
-    interval: 60m  # interval to check the repository for updates
-  ```
+[//]: # (TODO: This needs further explanation or a paragraph here.)
+
+```shell
+# HelmRepository YAML for StarlingX helm repository.
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: stx-platform
+spec:
+  url: http://<cluster_host_ip>:8080/helm_charts/stx-platform
+  # The cluster host ip is 192.168.206.1 if it wasn't changed during
+  # bootstrap
+  interval: 60m  # interval to check the repository for updates
+```
 
 #### base/kustomization.yaml
 
-  ```shell
-  resources:
-    - helmrepository.yaml
-  ```
+[//]: # (TODO: This needs further explanation or a paragraph here.)
+
+```shell
+resources:
+  - helmrepository.yaml
+```
 
 #### base/namespace.yaml
 
-  ```shell
-  apiVersion: v1
-  kind: Namespace
-  metadata:
-    name: <kubernetes-namespace>
-  ```
+[//]: # (TODO: This needs further explanation or a paragraph here.)
 
-### The APP-NAME chart directory contains the following:
+```shell
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: <kubernetes-namespace>
+```
+
+### The APP-NAME chart directory
+
+The APP-NAME chart directory contains the following:
 
 #### APP-NAME/helmrelease.yaml
 
-  ```shell
-  apiVersion: "helm.toolkit.fluxcd.io/v2beta1"
-  kind: HelmRelease
-  metadata:
-    name: APP-NAME
-    labels:
-      chart_group: APP-NAME
-  spec:
-    releaseName: APP-NAME
-    chart: 
-    # A HelmChart CR of a specific chart is auto created in the
-    # cluster with this definition
-      spec:
-        chart: CHART-NAME
-        version: VERSION
-        sourceRef:
-          kind: HelmRepository
-          name: stx-platform
-    interval: 5m  # Interval to reconcile Helm release
-    timeout: 30m
-    test:
-      enable: false
-    install:
-      disableHooks: false
-    upgrade:
-      disableHooks: false
-    valuesFrom:
-    # We store the static overrides and the system 
-    # overrides in k8s Secrets, the 2 yaml files are present in 
-    # the same directory with this file
-      - kind: Secret
-      name: APP-NAME-static-overrides
-      valuesKey: APP-NAME-static-overrides.yaml
-      - kind: Secret
-      name: APP-NAME-system-overrides
-      valuesKey: APP-NAME-system-overrides.yaml
-  ```
+```shell
+apiVersion: "helm.toolkit.fluxcd.io/v2beta1"
+kind: HelmRelease
+metadata:
+  name: APP-NAME
+  labels:
+    chart_group: APP-NAME
+spec:
+  releaseName: APP-NAME
+  chart: 
+  # A HelmChart CR of a specific chart is auto created in the
+  # cluster with this definition
+    spec:
+      chart: CHART-NAME
+      version: VERSION
+      sourceRef:
+        kind: HelmRepository
+        name: stx-platform
+  interval: 5m  # Interval to reconcile Helm release
+  timeout: 30m
+  test:
+    enable: false
+  install:
+    disableHooks: false
+  upgrade:
+    disableHooks: false
+  valuesFrom:
+  # We store the static overrides and the system 
+  # overrides in k8s Secrets, the 2 yaml files are present in 
+  # the same directory with this file
+    - kind: Secret
+    name: APP-NAME-static-overrides
+    valuesKey: APP-NAME-static-overrides.yaml
+    - kind: Secret
+    name: APP-NAME-system-overrides
+    valuesKey: APP-NAME-system-overrides.yaml
+```
 
 #### APP-NAME/kustomization.yaml
 
-  ```shell
-  namespace: <NAMESPACE>
-  resources:
-  - helmrelease.yaml
-  secretGenerator:  
-  # this will create the Secrets (that hold the 
-  # overrides) as part of application install
-    - name: APP-NAME-static-overrides
-      files:
-        - APP-NAME-static-overrides.yaml
-    - name: APP-NAME-system-overrides
-      files:
-        - APP-NAME-system-overrides.yaml
-  generatorOptions:
-    disableNameSuffixHash: true
-  ```
+[//]: # (TODO: This needs further explanation or a paragraph here.)
+
+```shell
+namespace: <NAMESPACE>
+resources:
+- helmrelease.yaml
+secretGenerator:  
+# this will create the Secrets (that hold the 
+# overrides) as part of application install
+  - name: APP-NAME-static-overrides
+    files:
+      - APP-NAME-static-overrides.yaml
+  - name: APP-NAME-system-overrides
+    files:
+      - APP-NAME-system-overrides.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+```
 
 #### APP-NAME/APP-NAME-static-overrides.yaml
 
-  ```shell
-  # The static overrides, basically all the values from the
-  # values.yaml of the application
-  ```
+[//]: # (TODO: This needs further explanation or a paragraph here.)
+
+```shell
+# The static overrides, basically all the values from the
+# values.yaml of the application
+```
 
 #### APP-NAME/APP-NAME-system-overrides.yaml
 
-  ```shell
-  # The APP-NAME-system-overrides.yaml is empty and will contain any 
-  # system overrides or user overrides ( generated by helm plugins or
-  # system helm-override-update)
-  ```
+[//]: # (TODO: This needs further explanation or a paragraph here.)
+
+```shell
+# The APP-NAME-system-overrides.yaml is empty and will contain any 
+# system overrides or user overrides ( generated by helm plugins or
+# system helm-override-update)
+```
 
 ## Plugins
 
-The plugins for the StarlingX applications will vary for each
-application, but a few files must exist for the StarlingX system to
-deploy an application as an system application. For a complete overview
-of different plugins used in the various applications available now for
-the StarlingX you may check the various applications available in the
-[StarlingX applications repository](https://opendev.org/starlingx?sort=recentupdate&language=&q=app).
-Some of the applications are:
+The plugins for the StarlingX Apps will vary from one application to another,
+however, a handful of files must exist for the StarlingX Platform to deploy the
+StarlingX App. For a complete overview of different plugins used in the
+various applications available now for StarlingX see 
+[StarlingX applications repository search](https://opendev.org/starlingx?sort=recentupdate&language=&q=app)
+.
+
+Here are some examples:
 
 - [Certificate Manager Application](https://opendev.org/starlingx/cert-manager-armada-app/src/branch/master/python3-k8sapp-cert-manager/k8sapp_cert_manager/k8sapp_cert_manager)
 - [Portieris Application](https://opendev.org/starlingx/portieris-armada-app/src/branch/master/python3-k8sapp-portieris/k8sapp_portieris/k8sapp_portieris)
 - [Dell Storage Application](https://opendev.org/starlingx/app-dell-storage/src/branch/master/python3-k8sapp-dell-storage/k8sapp_dell_storage/k8sapp_dell_storage)
 - [Vault Application](https://opendev.org/starlingx/vault-armada-app/src/branch/master/python3-k8sapp-vault/k8sapp_vault/k8sapp_vault)
 
-An overall structure for the plugins folder is as follow:
+The minimal suggested structure for the `plugins` folder is as follows:
 
-  ```shell
-  python3-k8sapp-APP-NAME/
-  ├── k8sapp_APP_NAME
-  │   ├── common
-  │   │   ├── __init__.py
-  │   │   └── constants.py
-  │   ├── helm
-  │   │   ├── __init__.py
-  │   │   └── APP_NAME.py
-  │   ├── kustomize
-  │   │   ├── __init__.py
-  │   │   └── kustomize_APP_NAME.py
-  │   ├── lifecycle
-  │   │   ├── __init__.py
-  │   │   └── lifecycle_APP_NAME.py
-  │   └── tests
-  │       ├──__init__.py
-  │       └── test.py
-  ├── __init__.py
-  ├── setup.cfg
-  └── setup.py
-  ```
+```shell
+python3-k8sapp-APP-NAME/
+├── k8sapp_APP_NAME
+│   ├── common
+│   │   ├── __init__.py
+│   │   └── constants.py
+│   ├── helm
+│   │   ├── __init__.py
+│   │   └── APP_NAME.py
+│   ├── kustomize
+│   │   ├── __init__.py
+│   │   └── kustomize_APP_NAME.py
+│   ├── lifecycle
+│   │   ├── __init__.py
+│   │   └── lifecycle_APP_NAME.py
+│   └── tests
+│       ├──__init__.py
+│       └── test.py
+├── __init__.py
+├── setup.cfg
+└── setup.py
+```
 
 * `constants.py`: This file is used to hold the constants that will be used on
-  the plugins.
+  the plugin(s).
 
-* `helm/APP_NAME.py`: File responsible for holding the functions that will be
-  used to create the overrides for the application. Usually for every APP_NAME
-  folder in the FluxCD Manifest, an APP_NAME.py plugins is used to create its 
+* `helm/APP_NAME.py`: File responsible for overriding methods that will be used
+  to create the Helm overrides for the StarlingX App. Usually for every APP_NAME
+  folder in the FluxCD Manifest, an APP_NAME.py plugin is used to create its 
   overrides.
 
 * `kustomize_APP_NAME.py`: This plugin is used to make changes to the top-level
-  kustomization resource list based on the platform mode.
+  `kustomization` resource list based on the platform mode.
 
-* `lifecycle_APP_NAME.py`: Responsible to perform lifecycle actions on the
-  application in the lifecycles hooks of the StarlingX system.
+* `lifecycle_APP_NAME.py`: Responsible for performing lifecycle actions on the
+  application using the lifecycle hooks of the StarlingX Platform.
 
-* `test.py`: File or files that holds the tests for the application and plugins.
+* `test.py`: File or files that holds unit tests for the application and 
+  plugins.
 
-Is important to point that most of the files above, although nice to have, are
-not mandatory. Files like the kustomize and lifecycle plugins will only exist
-if the application itself requires that these types of actions must be executed.
+It is important to notice that most of the files above, although nice to have,
+are not mandatory. Files like the `kustomize_*` and lifecycle plugins will only
+exist if the application itself requires that these types of actions are 
+necessary.
 
-Files that can be said to be mandatory is the helm/APP_NAME.py plugin, that is
-responsible for creating the overrides for the application on the StarlingX
-system and the common/constants.py file that will hold the constants used on
-the plugins. An generic example of this files can be seen bellow:
+The only mandatory file is the `helm/APP_NAME.py` plugin, which is responsible
+for creating the overrides for the application on the StarlingX Platform. An
+example can be seen below:
 
-`common/constants.py`
+```shell
+from k8sapp_APP_NAME.common import constants
+from sysinv.common import exception # import from the StarlingX Platform
+from sysinv.helm import base # import from the StarlingX Platform
 
-  ```shell
-  # Application Name
-  HELM_APP_APP_NAME = 'app-name'
+class AppNameHelm(base.FluxCDBaseHel):
+    """Class to encapsulate helm operations for the psp role-binding chart"""
 
-  #Namespace
-  HELM_NS_APP_NAME = 'namespace'
+    SUPPORTED_NAMESPACES = base.BaseHelm.SUPPORTED_NAMESPACES + \
+        [constants.HELM_NS_APP_NAME]
+    SUPPORTED_APP_NAMESPACES = {
+        constants.HELM_APP_APP_NAME:
+            base.BaseHelm.SUPPORTED_NAMESPACES + [constants.HELM_NS_APP_NAME],
+    }
 
-  # Helm: Supported charts:
-  HELM_CHART_APP_NAME = 'helm-chart-name'
+    CHART = constants.HELM_CHART_APP_NAME
+    HELM_RELEASE = constants.FLUXCD_HELMRELEASE_APP_NAME 
 
-  # FluxCD
-  FLUXCD_HELMRELEASE_APP_NAME = 'fluxcd-chart-name'
-  ```
-
-Note that the constants that will be used here may vary greatly from application
-to application. It is important to analyze the variables that will be used on
-your application plugins and store them in this file.
-
-
-`helm/APP_NAME.py`
-
-  ```shell
-
-  from k8sapp_APP_NAME.common import constants
-  from sysinv.common import exception
-  from sysinv.helm import base
-
-  class AppNameHelm(base.FluxCDBaseHel):
-      """Class to encapsulate helm operations for the psp rolebinding chart"""
-
-      SUPPORTED_NAMESPACES = base.BaseHelm.SUPPORTED_NAMESPACES + \
-          [constants.HELM_NS_APP_NAME]
-      SUPPORTED_APP_NAMESPACES = {
-          constants.HELM_APP_APP_NAME:
-              base.BaseHelm.SUPPORTED_NAMESPACES + [constants.HELM_NS_APP_NAME],
-      }
-
-      CHART = constants.HELM_CHART_APP_NAME
-      HELM_RELEASE = constants.FLUXCD_HELMRELEASE_APP_NAME 
-
-      def get_namespaces(self):
-          return self.SUPPORTED_NAMESPACES
+    def get_namespaces(self):
+        return self.SUPPORTED_NAMESPACES
 
 
-      def get_overrides(self, namespace=None):
-          overrides = {
-              constants.HELM_NS_APP_NAME: {
-                  # This function returns the full overrides used in the
-                  # application. If your application don't have static overrides
-                  # this functions will still exist with an empty implementation.
-              }
-          }
+    def get_overrides(self, namespace=None):
+        overrides = {
+            constants.HELM_NS_APP_NAME: {
+                # This function returns the full overrides used in the
+                # application. If your application don't have static overrides
+                # this functions should still exist with an empty
+                # implementation.
+            }
+        }
 
-      if namespace in self.SUPPORTED_NAMESPACES:
-          return overrides[namespace]
-      elif namespace:
-          raise exception.InvalidHelmNamespace(chart=self.CHART,
-                                               namespace=namespace)
-      else:
-          return overrides
-  ```
+    if namespace in self.SUPPORTED_NAMESPACES:
+        return overrides[namespace]
+    elif namespace:
+        raise exception.InvalidHelmNamespace(chart=self.CHART,
+                                             namespace=namespace)
+    else:
+        return overrides
+```
 
 The above file is an example of the most basic implementation of the plugin.
-On the example the plugin returns an empty override, usually in this case the
-full override will be passed by the user using `system helm-override-update`
-inside the StarlingX system.
+This example returns an empty override. Usually, in this case, the full override
+will be given by the user using `system helm-override-update` within the
+StarlingX Platform upon deployment of the StarlingX App.
 
-The sysinv folder in the [StarlingX config repository](https://opendev.org/starlingx/config/src/branch/master/sysinv/sysinv/sysinv/sysinv)
+An optional file, which we suggested that you make use of, is the
+`common/constants.py` file, which will hold the constants used on the
+plugins. A generic example of this file could be:
+
+```shell
+# Application Name
+HELM_APP_APP_NAME = 'app-name'
+
+#Namespace
+HELM_NS_APP_NAME = 'namespace'
+
+# Helm: Supported charts:
+HELM_CHART_APP_NAME = 'helm-chart-name'
+
+# FluxCD
+FLUXCD_HELMRELEASE_APP_NAME = 'fluxcd-chart-name'
+```
+
+The `sysinv` folder in the [StarlingX config repository](https://opendev.org/starlingx/config/src/branch/master/sysinv/sysinv/sysinv/sysinv)
 contains a multitude of functions and variables that may be helpful in the
-development of the application plugins.
+development of application plugins.
 
-For the files setup.cfg and setup. py. The implementation of the `setup.py`
-file can be as follow:
+Below is an example implementation of the `setup.py` file:
 
-  ```shell
-  import setuptools
+```shell
+import setuptools
 
-  setuptools.setup(
-      setup_requires=['pbr>=2.0.0'],
-      pbr=True)
-  ```
+setuptools.setup(
+    setup_requires=['pbr>=2.0.0'],
+    pbr=True)
+```
 
-The `setup.cfg` file implementation although bigger is easy, as a lot of the 
-implementation follow a recipe:
+The `setup.cfg` file implementation, although longer, is easy, as most of the 
+implementation follows a recipe:
 
-  ```shell
-  [metadata]
-  name = k8sapp-APP-NAME
-  summary = StarlingX sysinv extensions for app-name
-  author = <Author or teams name>
-  author-email = <Author or team email>
-  url = <Url for the application>
-  classifier =
-      Operating System :: OS Independent
-      License :: OSI Approved :: MIT License
-      # The language will be exclusive of each application
-      Programming Language :: Python :: 3
+```shell
+[metadata]
+name = k8sapp-APP-NAME
+summary = StarlingX sysinv extensions for app-name
+author = <Author or teams name>
+author-email = <Author or team email>
+url = <Url for the application>
+classifier =
+    Operating System :: OS Independent
+    License :: OSI Approved :: MIT License
+    # The language will be exclusive of each application
+    Programming Language :: Python :: 3
 
-  [options]
-  install_requires =
-      # Requirements for the application
+[options]
+install_requires =
+    # Requirements for the application
 
-  [files]
-  packages =
-      k8sapp_APP_NAME
+[files]
+packages =
+    k8sapp_APP_NAME
 
-  [global]
-  setup-hooks =
-      pbr.hooks.setup_hook
+[global]
+setup-hooks =
+    pbr.hooks.setup_hook
 
-  [entry_points]
-  systemconfig.helm_applications =
-      dell-storage = systemconfig.helm_plugins.APP_NAME
+[entry_points]
+systemconfig.helm_applications =
+    dell-storage = systemconfig.helm_plugins.APP_NAME
 
-  systemconfig.helm_plugins.APP_NAME =
-      001_APP-NAME = k8sapp_APP_NAME.helm.APP_NAME:AppNameHelm
-      # If the application requires more than one plugin in the helm folder
-      # to generate the overrides, the other files must also be listed here.
+systemconfig.helm_plugins.APP_NAME =
+    001_APP-NAME = k8sapp_APP_NAME.helm.APP_NAME:AppNameHelm
+    # If the application requires more than one plugin in the helm folder
+    # to generate the overrides, the other files must also be listed here.
 
-  systemconfig.fluxcd.kustomize_ops =
-      APP_NAME = k8sapp_APP_NAME.kustomize.kustomize_APP_NAME:AppNameFluxCDKustomizeOperator
+systemconfig.fluxcd.kustomize_ops =
+    APP_NAME = k8sapp_APP_NAME.kustomize.kustomize_APP_NAME:AppNameFluxCDKustomizeOperator
 
-  systemconfig.app_lifecycle =
-      APP-NAME = k8sapp_APP_NAME.lifecycle.lifecycle_APP_NAME:AppNameAppLifecycleOperator
+systemconfig.app_lifecycle =
+    APP-NAME = k8sapp_APP_NAME.lifecycle.lifecycle_APP_NAME:AppNameAppLifecycleOperator
 
-  [bdist_wheel]
-  universal = 1
-  ```
+[bdist_wheel]
+universal = 1
+```
 
-Finally the `test.py` file, although not mandatory to have, it is considered a
-good coding practice to test the application and its plugins.
+Finally, the `test.py` file, although not mandatory, is considered a good coding
+practice to test the StarlingX App and its plugins. If your app will be
+integrated to the StarlingX Platform and managed by the community, tests are
+mandatory.
+
 ## Application structure
 
 The final structure for the application is composed of the plugins, the FluxCD
