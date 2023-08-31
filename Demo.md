@@ -1,20 +1,23 @@
-# Poc-StarlingX
+# PoC-StarlingX Packaging and Demonstration
 
 This is an application developed as a proof of concept for the StarlingX
 Platform.
 
-The application simulates a network of anti-virus scanners running independently
-and geographically monitoring for threats. When the scan detects threats above 
-a threshold it reports to a central instance responsible for receiving all the 
-reports, process and store them, and output the information in a time series graph. 
+The application simulates a network of antivirus scanners and threat monitoring
+running independently and geographically distributed called `nodes`. When a node
+detects threats above a configurable threshold in an area it reports to a
+`central` instance responsible for aggregating, processing and storing data
+from all the `nodes` while presenting a bird's-eye view in a simple dashboard. 
 
-The application works as a system that either generates information or receives
-information from another instance of the application. This is understood as
-the application having two different personalities, the `node` which is the one
-that generates the information, and the `central` that receives the messages.
+The application can act either as a `node` or a `central` (which are called 
+"personalities") depending on the environment variables it has available. 
 
+- `Nodes` are geographically spread out doing the actual work of monitoring, for
+example, local networks. 
+- `Central` is a deployment that receives messages from `nodes`, processing and
+presenting data related to them.
 
-## Deploying PoC-StarlingX as a StarlingX Application
+## Deploying PoC-StarlingX as a StarlingX App
 
 1. To deploy the PoC-StarlingX app as a StalingX Application, you first need to
 package it. The `package-stx` `Make` target takes care of packaging the
