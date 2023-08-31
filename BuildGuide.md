@@ -389,9 +389,8 @@ mandatory.
 
 ## Application structure
 
-The final structure for the application is composed of the plugins, the FluxCD
-manifest and a metadata.yml file inside the folder containing the manifest.
-An application structure is as follow:
+The final structure for the application is composed of the plugin(s), the FluxCD
+manifest and a `metadata.yml` file inside the folder containing the manifest:
 
 ```shell
     APP-NAME/
@@ -402,137 +401,137 @@ An application structure is as follow:
     └── python3-k8sapp-APP-NAME/
 ```
 
-This specific structure is a simplified format that can be builded outside of a
-StarlingX build environment. For a more robust and StarlingX build environment
-centered structure refer to the [official wiki page](https://wiki.openstack.org/wiki/StarlingX/Containers/HowToAddNewFluxCDAppInSTX)
-with instructions on how to create and add an application to the StarlingX
-repository.
+>_NOTE_: This specific structure is a simplified format that can be built
+outside the StarlingX build environment and deployed independently on any
+StarlingX instance. For a more robust StarlingX build environment and expected
+community structure refer to the [official wiki page](https://wiki.openstack.org/wiki/StarlingX/Containers/HowToAddNewFluxCDAppInSTX)
+. You will find instructions on how to create and add an application to the
+StarlingX repository/community.
 
-The helm-charts folder contains the helm charts necessary to deploy your
-application on kubernetes.
+The `helm-charts` folder contains the helm charts necessary to deploy your
+StarlingX App on Kubernetes.
 
-The metadata.yaml is necessary to enable some features of the StarlingX
-environment. The template for this file can be seen bellow:
+The `metadata.yaml` file is necessary to enable some features of the StarlingX
+Platform. This is a template for this file:
 
-  ```shell
-  app_name: <name>
-  app_version: <version>
-  upgrades:
-    auto_update: <true/false/yes/no>
-    update_failure_no_rollback: <true/false/yes/no>
-    from_versions:
-    - <version.1>
-    - <version.2>
-  supported_k8s_version:
-    minimum: <version>
-    maximum: <version>
-  supported_releases:
-    <release>:
-    - <patch.1>
-    - <patch.2>
-    ...
-  repo: <helm repo> - optional: defaults to HELM_REPO_FOR_APPS
-  disabled_charts: - optional: charts default to enabled
-  - <chart name>
-  - <chart name>
+```shell
+app_name: <name>
+app_version: <version>
+upgrades:
+  auto_update: <true/false/yes/no>
+  update_failure_no_rollback: <true/false/yes/no>
+  from_versions:
+  - <version.1>
+  - <version.2>
+supported_k8s_version:
+  minimum: <version>
+  maximum: <version>
+supported_releases:
+  <release>:
+  - <patch.1>
+  - <patch.2>
   ...
-  maintain_user_overrides: <true|false>
-    - optional: defaults to false. Over an app update any user overrides are
-      preserved for the new version of the application
-  ...
-  behavior: - optional: describes the app behavior
-      platform_managed_app: <true/false/yes/no> - optional: when absent behaves as false
-      desired_state: <uploaded/applied> - optional: state the app should reach
-      evaluate_reapply: - optional: describe the reapply evaluation behaviour
-          after: - optional: list of apps that should be evaluated before the current one
-            - <app_name.1>
-            - <app_name.2>
-          triggers: - optional: list of what triggers the reapply evaluation
-            - type: <key in APP_EVALUATE_REAPPLY_TRIGGER_TO_METADATA_MAP>
-              filters: - optional: list of field:value, that aid filtering
-                  of the trigger events. All pairs in this list must be
-                  present in trigger dictionary that is passed in
-                  the calls (eg. trigger[field_name1]==value_name1 and
-                  trigger[field_name2]==value_name2).
-                  Function evaluate_apps_reapply takes a dictionary called
-                  'trigger' as parameter. Depending on trigger type this
-                  may contain custom information used by apps, for example
-                  a field 'personality' corresponding to node personality.
-                  It is the duty of the app developer to enhance existing
-                  triggers with the required information.
-                  Hard to obtain information should be passed in the trigger.
-                  To use existing information it is as simple as defining
-                  the metadata.
-                - <field_name.1>: <value_name.1>
-                - <field_name.2>: <value_name.2>
-              filter_field: <field_name> - optional: field name in trigger
-                            dictionary. If specified the filters are applied
-                            to trigger[filter_field] sub-dictionary instead
-                            of the root trigger dictionary.
-  apply_progress_adjust: - optional: Positive integer value by which to adjust the
-                                     percentage calculations for the progress of
-                                     a monitoring task.
-                                     Default value is zero (no adjustment)
-  ```
+repo: <helm repo> - optional: defaults to HELM_REPO_FOR_APPS
+disabled_charts: - optional: charts default to enabled
+- <chart name>
+- <chart name>
+...
+maintain_user_overrides: <true|false>
+  - optional: defaults to false. Over an app update any user overrides are
+    preserved for the new version of the application
+...
+behavior: - optional: describes the app behavior
+    platform_managed_app: <true/false/yes/no> - optional: when absent behaves as false
+    desired_state: <uploaded/applied> - optional: state the app should reach
+    evaluate_reapply: - optional: describe the reapply evaluation behaviour
+        after: - optional: list of apps that should be evaluated before the current one
+          - <app_name.1>
+          - <app_name.2>
+        triggers: - optional: list of what triggers the reapply evaluation
+          - type: <key in APP_EVALUATE_REAPPLY_TRIGGER_TO_METADATA_MAP>
+            filters: - optional: list of field:value, that aid filtering
+                of the trigger events. All pairs in this list must be
+                present in trigger dictionary that is passed in
+                the calls (eg. trigger[field_name1]==value_name1 and
+                trigger[field_name2]==value_name2).
+                Function evaluate_apps_reapply takes a dictionary called
+                'trigger' as parameter. Depending on trigger type this
+                may contain custom information used by apps, for example
+                a field 'personality' corresponding to node personality.
+                It is the duty of the app developer to enhance existing
+                triggers with the required information.
+                Hard to obtain information should be passed in the trigger.
+                To use existing information it is as simple as defining
+                the metadata.
+              - <field_name.1>: <value_name.1>
+              - <field_name.2>: <value_name.2>
+            filter_field: <field_name> - optional: field name in trigger
+                          dictionary. If specified the filters are applied
+                          to trigger[filter_field] sub-dictionary instead
+                          of the root trigger dictionary.
+apply_progress_adjust: - optional: Positive integer value by which to adjust the
+                                   percentage calculations for the progress of
+                                   a monitoring task.
+                                   Default value is zero (no adjustment)
+```
 
 For a better understanding of each of the attributes in this yaml file refer to
 [this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml)
-in order to define the necessary attributes needed for your application.
+in order to determine the necessary attributes for your application.
 
 ## Packaging the application
 
-As said before, the Starlingx offers an environment to build applications and 
-the system ISO. In order to deploy this environment you can follow the 
-instructions in [this link](https://wiki.openstack.org/wiki/StarlingX/DebianBuildEnvironment).
+As said before, the StarlingX community offers an environment to build
+applications and the StarlingX Platform `.iso` file itself. In order to deploy
+this environment you can follow the instructions on [this link](https://wiki.openstack.org/wiki/StarlingX/DebianBuildEnvironment).
 Alternatively you can use the [tis-repo repository](https://opendev.org/starlingx/tis-repo)
-to deploy the StarlingX build environment using Vagrant.
+to create the StarlingX build environment using Vagrant/VirtualBox.
 
-Although the build environment can be said to be the official way to build a
-StarlingX application, some applications can be built using a few shell commands.
+However, you don't need the whole StarlingX Platform source code to package your
+application into a StarlingX App package.
 
-Bellow is a list with the necessary steps and commands to build your
-application package.
+Below is an example of how this can be achieved using the structure provided in
+this repository:
 
-  ```shell
-  export APP_NAME="app-name"
-  export APP_NAME_2="app_name"
-  ```
+```shell
+export APP_NAME="app-name"
+export APP_NAME_2="app2_name"
+```
 
-  ```shell
-  # Package the helm charts
-   helm package helm-chart/
+```shell
+# Package the helm charts
+helm package helm-chart/
 
-  # Package the plugins via wheel
-    cd python3-k8sapp-${APP_NAME}; \
-   python3 setup.py bdist_wheel \
-   --universal -d k8sapp_${APP_NAME_2}
+# Package the plugin(s) in the Wheel format
+cd python3-k8sapp-${APP_NAME}; \
+python3 setup.py bdist_wheel \
+--universal -d k8sapp_${APP_NAME_2}
 
+# Clean up files and folders
+rm -r python3-k8sapp-${APP_NAME}/build/ \
+python3-k8sapp-${APP_NAME}/k8sapp_${APP_NAME_2}.egg-info/ \
+python3-k8sapp-${APP_NAME}/AUTHORS python3-k8sapp-${APP_NAME}/ChangeLog
 
-  # Remove the files created during the execution of the packaging command
-   rm -r python3-k8sapp-${APP_NAME}/build/ \
-    python3-k8sapp-${APP_NAME}/k8sapp_${APP_NAME_2}.egg-info/ \
-    python3-k8sapp-${APP_NAME}/AUTHORS python3-k8sapp-${APP_NAME}/ChangeLog
+# Package the StarlingX App
+# Create folders inside stx-APP-NAME-helm/ for the chart and plugin packages
+mkdir -p stx-${APP_NAME}-helm/charts
+mkdir -p stx-${APP_NAME}-helm/plugins
 
-  # Package the application
-    # Create folders inside stx-APP-NAME-helm/ for the chart and plugin packages
-    mkdir -p stx-${APP_NAME}-helm/charts
-    mkdir -p stx-${APP_NAME}-helm/plugins
+# Move the helm charts package to the stx-APP-NAME-helm/charts folder
+mv ${APP_NAME_2}*.tgz stx-${APP_NAME}-helm/charts/
 
-    # Move the helm charts package to the stx-APP-NAME-helm/charts folder
-    mv ${APP_NAME_2}*.tgz stx-${APP_NAME}-helm/charts/
+# Move the plugin (wheel package) to the stx-APP-NAME-helm/plugins folder
+mv python3-k8sapp-${APP_NAME}/k8sapp_APP_NAME${APP_NAME_2}k8sapp_${APP_NAME_2}*.whl \
+stx-${APP_NAME}-helm/plugins
 
-    # Move the plugin wheel package to the stx-APP-NAME-helm/plugins folder
-    mv python3-k8sapp-${APP_NAME}/k8sapp_APP_NAME${APP_NAME_2}k8sapp_${APP_NAME_2}*.whl \
-    stx-${APP_NAME}-helm/plugins
+# Create a md5 checksum
+cd stx-${APP_NAME}-helm; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
 
-    # Save a md5 checksum
-    cd stx-${APP_NAME}-helm; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
+# Compress everything into the StarlingX App package
+cd stx-${APP_NAME}-helm; tar -czvf ../${APP_NAME_2}_pkg.tar.gz *
 
-    # Build the application package
-    cd stx-${APP_NAME}-helm; tar -czvf ../${APP_NAME_2}_pkg.tar.gz *
-
-    # remove all extra the folders and files created during packaging
-    rm stx-${APP_NAME}-helm/checksum.md5
-    rm -r stx-${APP_NAME}-helm/charts/
-    rm -r stx-${APP_NAME}-helm/plugins/
-  ```
+# Clean up files and folders
+rm stx-${APP_NAME}-helm/checksum.md5
+rm -r stx-${APP_NAME}-helm/charts/
+rm -r stx-${APP_NAME}-helm/plugins/
+```
