@@ -13,6 +13,10 @@ a StarlingX application.
 
 ## Prerequisites
 
+As the StarlingX system runs atop a kubernetes structure, for an application
+to be deployed as an StarlingX app it needs to be design so it can run on
+kubernetes and be deployable via helm charts.
+
 [//]: # (TODO: need to state that the app needs to be designed to run in Kubernetes and "Helmerized")
 [//]: # (TODO: and maybe other prerequisites)
 
@@ -22,19 +26,19 @@ The FluxCD Manifest for the StarlingX environment must follow a specific
 structure. The overall, generic structure of a StarlingX FluxCD Manifest
 is as follow:
 
-```shell
-    fluxcd-manifests/
-    ├── base
-    │   ├── helmrepository.yaml
-    │   ├── kustomization.yaml
-    │   └── namespace.yaml
-    ├── kustomization.yaml
-    └── APP-NAME
-        ├── helmrelease.yaml
-        ├── kustomization.yaml
-        ├── APP-NAME-static-overrides.yaml
-        └── APP-NAME-system-overrides.yaml
-```
+  ```shell
+  fluxcd-manifests/
+  ├── base
+  │   ├── helmrepository.yaml
+  │   ├── kustomization.yaml
+  │   └── namespace.yaml
+  ├── kustomization.yaml
+  └── APP-NAME
+      ├── helmrelease.yaml
+      ├── kustomization.yaml
+      ├── APP-NAME-static-overrides.yaml
+      └── APP-NAME-system-overrides.yaml
+  ```
 
 An application may make use of multiple folders of APP-NAME containing
 different `helmrelease.yaml` for each one. An example of this can be
@@ -46,123 +50,123 @@ for StarlingX.
 Each layer must have a `kustomization.yaml` file that contains the
 resources to apply.
 
-```shell
-    apiVersion: kustomize.config.k8s.io/v1beta1
-    kind: Kustomization
-    namespace: <kubernetes-namespace>
-    resources: # the chart directories that need to be applied
-      - base
-      - APP-NAME
-```
+  ```shell
+  apiVersion: kustomize.config.k8s.io/v1beta1
+  kind: Kustomization
+  namespace: <kubernetes-namespace>
+  resources: # the chart directories that need to be applied
+    - base
+    - APP-NAME
+  ```
 
 ### The base chart directory contains the following:
 
 #### base/helmrepository.yaml
 
-```shell
-    # HelmRepository YAML for StarlingX helm repository.
-    apiVersion: source.toolkit.fluxcd.io/v1beta1
-    kind: HelmRepository
-    metadata:
-      name: stx-platform
-    spec:
-      url: http://<cluster_host_ip>:8080/helm_charts/stx-platform
-      # The cluster host ip is 192.168.206.1 if it wasn't changed during
-      # bootstrap
-      interval: 60m  # interval to check the repository for updates
-```
+  ```shell
+  # HelmRepository YAML for StarlingX helm repository.
+  apiVersion: source.toolkit.fluxcd.io/v1beta1
+  kind: HelmRepository
+  metadata:
+    name: stx-platform
+  spec:
+    url: http://<cluster_host_ip>:8080/helm_charts/stx-platform
+    # The cluster host ip is 192.168.206.1 if it wasn't changed during
+    # bootstrap
+    interval: 60m  # interval to check the repository for updates
+  ```
 
 #### base/kustomization.yaml
 
-```shell
-    resources:
-      - helmrepository.yaml
-```
+  ```shell
+  resources:
+    - helmrepository.yaml
+  ```
 
 #### base/namespace.yaml
 
-```shell
-    apiVersion: v1
-    kind: Namespace
-    metadata:
-      name: <kubernetes-namespace>
-```
+  ```shell
+  apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: <kubernetes-namespace>
+  ```
 
 ### The APP-NAME chart directory contains the following:
 
 #### APP-NAME/helmrelease.yaml
 
-```shell
-    apiVersion: "helm.toolkit.fluxcd.io/v2beta1"
-    kind: HelmRelease
-    metadata:
-      name: APP-NAME
-      labels:
-        chart_group: APP-NAME
-    spec:
-      releaseName: APP-NAME
-      chart: 
-      # A HelmChart CR of a specific chart is auto created in the
-      # cluster with this definition
-        spec:
-          chart: CHART-NAME
-          version: VERSION
-          sourceRef:
-            kind: HelmRepository
-            name: stx-platform
-      interval: 5m  # Interval to reconcile Helm release
-      timeout: 30m
-      test:
-        enable: false
-      install:
-        disableHooks: false
-      upgrade:
-        disableHooks: false
-      valuesFrom:
-      # We store the static overrides and the system 
-      # overrides in k8s Secrets, the 2 yaml files are present in 
-      # the same directory with this file
-        - kind: Secret
-        name: APP-NAME-static-overrides
-        valuesKey: APP-NAME-static-overrides.yaml
-        - kind: Secret
-        name: APP-NAME-system-overrides
-        valuesKey: APP-NAME-system-overrides.yaml
-```
+  ```shell
+  apiVersion: "helm.toolkit.fluxcd.io/v2beta1"
+  kind: HelmRelease
+  metadata:
+    name: APP-NAME
+    labels:
+      chart_group: APP-NAME
+  spec:
+    releaseName: APP-NAME
+    chart: 
+    # A HelmChart CR of a specific chart is auto created in the
+    # cluster with this definition
+      spec:
+        chart: CHART-NAME
+        version: VERSION
+        sourceRef:
+          kind: HelmRepository
+          name: stx-platform
+    interval: 5m  # Interval to reconcile Helm release
+    timeout: 30m
+    test:
+      enable: false
+    install:
+      disableHooks: false
+    upgrade:
+      disableHooks: false
+    valuesFrom:
+    # We store the static overrides and the system 
+    # overrides in k8s Secrets, the 2 yaml files are present in 
+    # the same directory with this file
+      - kind: Secret
+      name: APP-NAME-static-overrides
+      valuesKey: APP-NAME-static-overrides.yaml
+      - kind: Secret
+      name: APP-NAME-system-overrides
+      valuesKey: APP-NAME-system-overrides.yaml
+  ```
 
 #### APP-NAME/kustomization.yaml
 
-```shell
-    namespace: <NAMESPACE>
-    resources:
-    - helmrelease.yaml
-    secretGenerator:  
-    # this will create the Secrets (that hold the 
-    # overrides) as part of application install
-      - name: APP-NAME-static-overrides
-        files:
-          - APP-NAME-static-overrides.yaml
-      - name: APP-NAME-system-overrides
-        files:
-          - APP-NAME-system-overrides.yaml
-    generatorOptions:
-      disableNameSuffixHash: true
-```
+  ```shell
+  namespace: <NAMESPACE>
+  resources:
+  - helmrelease.yaml
+  secretGenerator:  
+  # this will create the Secrets (that hold the 
+  # overrides) as part of application install
+    - name: APP-NAME-static-overrides
+      files:
+        - APP-NAME-static-overrides.yaml
+    - name: APP-NAME-system-overrides
+      files:
+        - APP-NAME-system-overrides.yaml
+  generatorOptions:
+    disableNameSuffixHash: true
+  ```
 
 #### APP-NAME/APP-NAME-static-overrides.yaml
 
-```shell
-    # the static overrides, basically all the values from the
-    # values.yaml of the application
-```
+  ```shell
+  # The static overrides, basically all the values from the
+  # values.yaml of the application
+  ```
 
 #### APP-NAME/APP-NAME-system-overrides.yaml
 
-```shell
-    #The APP-NAME-system-overrides.yaml is empty and will contain any 
-    # system overrides or user overrides ( generated by helm plugins or
-    # system helm-override-update)
-```
+  ```shell
+  # The APP-NAME-system-overrides.yaml is empty and will contain any 
+  # system overrides or user overrides ( generated by helm plugins or
+  # system helm-override-update)
+  ```
 
 ## Plugins
 
@@ -181,35 +185,36 @@ Some of the applications are:
 
 An overall structure for the plugins folder is as follow:
 
-```shell
-    python3-k8sapp-APP-NAME/
-    ├── k8sapp_APP_NAME
-    │   ├── common
-    │   │   ├── __init__.py
-    │   │   └── constants.py
-    │   ├── helm
-    │   │   ├── __init__.py
-    │   │   └── APP_NAME.py
-    │   ├── kustomize
-    │   │   ├── __init__.py
-    │   │   └── kustomize_APP_NAME.py
-    │   ├── lifecycle
-    │   │   ├── __init__.py
-    │   │   └── lifecycle_APP_NAME.py
-    │   └── tests
-    │       ├──__init__.py
-    │       └── test.py
-    ├── __init__.py
-    ├── setup.cfg
-    └── setup.py
-```
+  ```shell
+  python3-k8sapp-APP-NAME/
+  ├── k8sapp_APP_NAME
+  │   ├── common
+  │   │   ├── __init__.py
+  │   │   └── constants.py
+  │   ├── helm
+  │   │   ├── __init__.py
+  │   │   └── APP_NAME.py
+  │   ├── kustomize
+  │   │   ├── __init__.py
+  │   │   └── kustomize_APP_NAME.py
+  │   ├── lifecycle
+  │   │   ├── __init__.py
+  │   │   └── lifecycle_APP_NAME.py
+  │   └── tests
+  │       ├──__init__.py
+  │       └── test.py
+  ├── __init__.py
+  ├── setup.cfg
+  └── setup.py
+  ```
+
 * `constants.py`: This file is used to hold the constants that will be used on
   the plugins.
 
-* `helm/APP_NAME.py`: File responsible for holding the the functions that 
-  will be used to create the overrides for the application. Usually for every 
-  APP_NAME folder in the FluxCD Manifest, an APP_NAME.py plugins is used to 
-  create its overrides.
+* `helm/APP_NAME.py`: File responsible for holding the functions that will be
+  used to create the overrides for the application. Usually for every APP_NAME
+  folder in the FluxCD Manifest, an APP_NAME.py plugins is used to create its 
+  overrides.
 
 * `kustomize_APP_NAME.py`: This plugin is used to make changes to the top-level
   kustomization resource list based on the platform mode.
@@ -230,19 +235,19 @@ the plugins. An generic example of this files can be seen bellow:
 
 `common/constants.py`
 
-```shell
-    # Application Name
-    HELM_APP_APP_NAME = 'app-name'
+  ```shell
+  # Application Name
+  HELM_APP_APP_NAME = 'app-name'
 
-    #Namespace
-    HELM_NS_APP_NAME = 'namespace'
+  #Namespace
+  HELM_NS_APP_NAME = 'namespace'
 
-    # Helm: Supported charts:
-    HELM_CHART_APP_NAME = 'helm-chart-name'
+  # Helm: Supported charts:
+  HELM_CHART_APP_NAME = 'helm-chart-name'
 
-    # FluxCD
-    FLUXCD_HELMRELEASE_APP_NAME = 'fluxcd-chart-name'
-```
+  # FluxCD
+  FLUXCD_HELMRELEASE_APP_NAME = 'fluxcd-chart-name'
+  ```
 
 Note that the constants that will be used here may vary greatly from application
 to application. It is important to analyze the variables that will be used on
@@ -251,46 +256,46 @@ your application plugins and store them in this file.
 
 `helm/APP_NAME.py`
 
-```shell
+  ```shell
 
-    from k8sapp_APP_NAME.common import constants
-    from sysinv.common import exception
-    from sysinv.helm import base
+  from k8sapp_APP_NAME.common import constants
+  from sysinv.common import exception
+  from sysinv.helm import base
 
-    class AppNameHelm(base.BaseHelm):
-        """Class to encapsulate helm operations for the psp rolebinding chart"""
+  class AppNameHelm(base.FluxCDBaseHel):
+      """Class to encapsulate helm operations for the psp rolebinding chart"""
 
-        SUPPORTED_NAMESPACES = base.BaseHelm.SUPPORTED_NAMESPACES + \
-            [constants.HELM_NS_APP_NAME]
-        SUPPORTED_APP_NAMESPACES = {
-            constants.HELM_APP_APP_NAME:
-                base.BaseHelm.SUPPORTED_NAMESPACES + [constants.HELM_NS_APP_NAME],
-        }
+      SUPPORTED_NAMESPACES = base.BaseHelm.SUPPORTED_NAMESPACES + \
+          [constants.HELM_NS_APP_NAME]
+      SUPPORTED_APP_NAMESPACES = {
+          constants.HELM_APP_APP_NAME:
+              base.BaseHelm.SUPPORTED_NAMESPACES + [constants.HELM_NS_APP_NAME],
+      }
 
-        CHART = constants.HELM_CHART_APP_NAME
+      CHART = constants.HELM_CHART_APP_NAME
+      HELM_RELEASE = constants.FLUXCD_HELMRELEASE_APP_NAME 
+
+      def get_namespaces(self):
+          return self.SUPPORTED_NAMESPACES
 
 
-        def get_namespaces(self):
-            return self.SUPPORTED_NAMESPACES
+      def get_overrides(self, namespace=None):
+          overrides = {
+              constants.HELM_NS_APP_NAME: {
+                  # This function returns the full overrides used in the
+                  # application. If your application don't have static overrides
+                  # this functions will still exist with an empty implementation.
+              }
+          }
 
-
-        def get_overrides(self, namespace=None):
-        overrides = {
-            constants.HELM_NS_APP_NAME: {
-                # This function returns the full overrides used in the
-                # application. If your application don't have static overrides
-                # this functions will still exist with an empty implementation.
-            }
-        }
-
-        if namespace in self.SUPPORTED_NAMESPACES:
-            return overrides[namespace]
-        elif namespace:
-            raise exception.InvalidHelmNamespace(chart=self.CHART,
-                                                 namespace=namespace)
-        else:
-            return overrides
-```
+      if namespace in self.SUPPORTED_NAMESPACES:
+          return overrides[namespace]
+      elif namespace:
+          raise exception.InvalidHelmNamespace(chart=self.CHART,
+                                               namespace=namespace)
+      else:
+          return overrides
+  ```
 
 The above file is an example of the most basic implementation of the plugin.
 On the example the plugin returns an empty override, usually in this case the
@@ -304,62 +309,60 @@ development of the application plugins.
 For the files setup.cfg and setup. py. The implementation of the `setup.py`
 file can be as follow:
 
-```shell
-    import setuptools
+  ```shell
+  import setuptools
 
-    setuptools.setup(
-        setup_requires=['pbr>=2.0.0'],
-        pbr=True)
-
-```
+  setuptools.setup(
+      setup_requires=['pbr>=2.0.0'],
+      pbr=True)
+  ```
 
 The `setup.cfg` file implementation although bigger is easy, as a lot of the 
 implementation follow a recipe:
 
-```shell
-    [metadata]
-    name = k8sapp-APP-NAME
-    summary = StarlingX sysinv extensions for app-name
-    author = <Author or teams name>
-    author-email = <Author or team email>
-    url = <Url for the application>
-    classifier =
-        Operating System :: OS Independent
-        License :: OSI Approved :: MIT License
-        # The language will be exclusive of each application
-        Programming Language :: Python :: 3
+  ```shell
+  [metadata]
+  name = k8sapp-APP-NAME
+  summary = StarlingX sysinv extensions for app-name
+  author = <Author or teams name>
+  author-email = <Author or team email>
+  url = <Url for the application>
+  classifier =
+      Operating System :: OS Independent
+      License :: OSI Approved :: MIT License
+      # The language will be exclusive of each application
+      Programming Language :: Python :: 3
 
-    [options]
-    install_requires =
-        # Requirements for the application
+  [options]
+  install_requires =
+      # Requirements for the application
 
-    [files]
-    packages =
-        k8sapp_APP_NAME
+  [files]
+  packages =
+      k8sapp_APP_NAME
 
-    [global]
-    setup-hooks =
-        pbr.hooks.setup_hook
+  [global]
+  setup-hooks =
+      pbr.hooks.setup_hook
 
-    [entry_points]
-    systemconfig.helm_applications =
-        dell-storage = systemconfig.helm_plugins.APP_NAME
+  [entry_points]
+  systemconfig.helm_applications =
+      dell-storage = systemconfig.helm_plugins.APP_NAME
 
-    systemconfig.helm_plugins.APP_NAME =
-        001_APP-NAME = k8sapp_APP_NAME.helm.APP_NAME:AppNameHelm
-        # If the application requires more than one plugin in the helm folder
-        # to generate the overrides, the other files must also be listed here.
+  systemconfig.helm_plugins.APP_NAME =
+      001_APP-NAME = k8sapp_APP_NAME.helm.APP_NAME:AppNameHelm
+      # If the application requires more than one plugin in the helm folder
+      # to generate the overrides, the other files must also be listed here.
 
-    systemconfig.fluxcd.kustomize_ops =
-        APP_NAME = k8sapp_APP_NAME.kustomize.kustomize_APP_NAME:AppNameFluxCDKustomizeOperator
+  systemconfig.fluxcd.kustomize_ops =
+      APP_NAME = k8sapp_APP_NAME.kustomize.kustomize_APP_NAME:AppNameFluxCDKustomizeOperator
 
-    systemconfig.app_lifecycle =
-        APP-NAME = k8sapp_APP_NAME.lifecycle.lifecycle_APP_NAME:AppNameAppLifecycleOperator
+  systemconfig.app_lifecycle =
+      APP-NAME = k8sapp_APP_NAME.lifecycle.lifecycle_APP_NAME:AppNameAppLifecycleOperator
 
-    [bdist_wheel]
-    universal = 1
-
-```
+  [bdist_wheel]
+  universal = 1
+  ```
 
 Finally the `test.py` file, although not mandatory to have, it is considered a
 good coding practice to test the application and its plugins.
@@ -390,66 +393,66 @@ application on kubernetes.
 The metadata.yaml is necessary to enable some features of the StarlingX
 environment. The template for this file can be seen bellow:
 
-```shell
-    app_name: <name>
-    app_version: <version>
-    upgrades:
-      auto_update: <true/false/yes/no>
-      update_failure_no_rollback: <true/false/yes/no>
-      from_versions:
-      - <version.1>
-      - <version.2>
-    supported_k8s_version:
-      minimum: <version>
-      maximum: <version>
-    supported_releases:
-      <release>:
-      - <patch.1>
-      - <patch.2>
-      ...
-    repo: <helm repo> - optional: defaults to HELM_REPO_FOR_APPS
-    disabled_charts: - optional: charts default to enabled
-    - <chart name>
-    - <chart name>
+  ```shell
+  app_name: <name>
+  app_version: <version>
+  upgrades:
+    auto_update: <true/false/yes/no>
+    update_failure_no_rollback: <true/false/yes/no>
+    from_versions:
+    - <version.1>
+    - <version.2>
+  supported_k8s_version:
+    minimum: <version>
+    maximum: <version>
+  supported_releases:
+    <release>:
+    - <patch.1>
+    - <patch.2>
     ...
-    maintain_user_overrides: <true|false>
-      - optional: defaults to false. Over an app update any user overrides are
-        preserved for the new version of the application
-    ...
-    behavior: - optional: describes the app behavior
-        platform_managed_app: <true/false/yes/no> - optional: when absent behaves as false
-        desired_state: <uploaded/applied> - optional: state the app should reach
-        evaluate_reapply: - optional: describe the reapply evaluation behaviour
-            after: - optional: list of apps that should be evaluated before the current one
-              - <app_name.1>
-              - <app_name.2>
-            triggers: - optional: list of what triggers the reapply evaluation
-              - type: <key in APP_EVALUATE_REAPPLY_TRIGGER_TO_METADATA_MAP>
-                filters: - optional: list of field:value, that aid filtering
-                    of the trigger events. All pairs in this list must be
-                    present in trigger dictionary that is passed in
-                    the calls (eg. trigger[field_name1]==value_name1 and
-                    trigger[field_name2]==value_name2).
-                    Function evaluate_apps_reapply takes a dictionary called
-                    'trigger' as parameter. Depending on trigger type this
-                    may contain custom information used by apps, for example
-                    a field 'personality' corresponding to node personality.
-                    It is the duty of the app developer to enhance existing
-                    triggers with the required information.
-                    Hard to obtain information should be passed in the trigger.
-                    To use existing information it is as simple as defining
-                    the metadata.
-                  - <field_name.1>: <value_name.1>
-                  - <field_name.2>: <value_name.2>
-                filter_field: <field_name> - optional: field name in trigger
-                              dictionary. If specified the filters are applied
-                              to trigger[filter_field] sub-dictionary instead
-                              of the root trigger dictionary.
-    apply_progress_adjust: - optional: Positive integer value by which to adjust the
-                                       percentage calculations for the progress of
-                                       a monitoring task.
-                                       Default value is zero (no adjustment)
-```
+  repo: <helm repo> - optional: defaults to HELM_REPO_FOR_APPS
+  disabled_charts: - optional: charts default to enabled
+  - <chart name>
+  - <chart name>
+  ...
+  maintain_user_overrides: <true|false>
+    - optional: defaults to false. Over an app update any user overrides are
+      preserved for the new version of the application
+  ...
+  behavior: - optional: describes the app behavior
+      platform_managed_app: <true/false/yes/no> - optional: when absent behaves as false
+      desired_state: <uploaded/applied> - optional: state the app should reach
+      evaluate_reapply: - optional: describe the reapply evaluation behaviour
+          after: - optional: list of apps that should be evaluated before the current one
+            - <app_name.1>
+            - <app_name.2>
+          triggers: - optional: list of what triggers the reapply evaluation
+            - type: <key in APP_EVALUATE_REAPPLY_TRIGGER_TO_METADATA_MAP>
+              filters: - optional: list of field:value, that aid filtering
+                  of the trigger events. All pairs in this list must be
+                  present in trigger dictionary that is passed in
+                  the calls (eg. trigger[field_name1]==value_name1 and
+                  trigger[field_name2]==value_name2).
+                  Function evaluate_apps_reapply takes a dictionary called
+                  'trigger' as parameter. Depending on trigger type this
+                  may contain custom information used by apps, for example
+                  a field 'personality' corresponding to node personality.
+                  It is the duty of the app developer to enhance existing
+                  triggers with the required information.
+                  Hard to obtain information should be passed in the trigger.
+                  To use existing information it is as simple as defining
+                  the metadata.
+                - <field_name.1>: <value_name.1>
+                - <field_name.2>: <value_name.2>
+              filter_field: <field_name> - optional: field name in trigger
+                            dictionary. If specified the filters are applied
+                            to trigger[filter_field] sub-dictionary instead
+                            of the root trigger dictionary.
+  apply_progress_adjust: - optional: Positive integer value by which to adjust the
+                                     percentage calculations for the progress of
+                                     a monitoring task.
+                                     Default value is zero (no adjustment)
+  ```
 
 For a better understanding of each of the attributes in this yaml file refer to
 [this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml)
@@ -469,48 +472,46 @@ StarlingX application, some applications can be built using a few shell commands
 Bellow is a list with the necessary steps and commands to build your
 application package.
 
-```shell
-    export APP_NAME="app-name"
-    export APP_NAME_2="app_name"
-```
+  ```shell
+  export APP_NAME="app-name"
+  export APP_NAME_2="app_name"
+  ```
 
-```shell
+  ```shell
+  # Package the helm charts
+   helm package helm-chart/
 
-    # Package the helm charts
-  	  helm package helm-chart/
-
-    # Package the plugins via wheel
-      cd python3-k8sapp-${APP_NAME}; \
-  	  python3 setup.py bdist_wheel \
-  	  --universal -d k8sapp_${APP_NAME_2}
+  # Package the plugins via wheel
+    cd python3-k8sapp-${APP_NAME}; \
+   python3 setup.py bdist_wheel \
+   --universal -d k8sapp_${APP_NAME_2}
 
 
-    # Remove the files created during the execution of the packaging command
-  	  rm -r python3-k8sapp-${APP_NAME}/build/ \
-      python3-k8sapp-${APP_NAME}/k8sapp_${APP_NAME_2}.egg-info/ \
-      python3-k8sapp-${APP_NAME}/AUTHORS python3-k8sapp-${APP_NAME}/ChangeLog
-    
-    # Package the application
-      # Create folders inside stx-APP-NAME-helm/ for the chart and plugin packages
-      mkdir -p stx-${APP_NAME}-helm/charts
-      mkdir -p stx-${APP_NAME}-helm/plugins
+  # Remove the files created during the execution of the packaging command
+   rm -r python3-k8sapp-${APP_NAME}/build/ \
+    python3-k8sapp-${APP_NAME}/k8sapp_${APP_NAME_2}.egg-info/ \
+    python3-k8sapp-${APP_NAME}/AUTHORS python3-k8sapp-${APP_NAME}/ChangeLog
 
-      # Move the helm charts package to the stx-APP-NAME-helm/charts folder
-      mv ${APP_NAME_2}*.tgz stx-${APP_NAME}-helm/charts/
+  # Package the application
+    # Create folders inside stx-APP-NAME-helm/ for the chart and plugin packages
+    mkdir -p stx-${APP_NAME}-helm/charts
+    mkdir -p stx-${APP_NAME}-helm/plugins
 
-      # Move the plugin wheel package to the stx-APP-NAME-helm/plugins folder
-      mv python3-k8sapp-${APP_NAME}/k8sapp_APP_NAME${APP_NAME_2}k8sapp_${APP_NAME_2}*.whl \
-      stx-${APP_NAME}-helm/plugins
+    # Move the helm charts package to the stx-APP-NAME-helm/charts folder
+    mv ${APP_NAME_2}*.tgz stx-${APP_NAME}-helm/charts/
 
-      # Save a md5 checksum
-      cd stx-${APP_NAME}-helm; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
+    # Move the plugin wheel package to the stx-APP-NAME-helm/plugins folder
+    mv python3-k8sapp-${APP_NAME}/k8sapp_APP_NAME${APP_NAME_2}k8sapp_${APP_NAME_2}*.whl \
+    stx-${APP_NAME}-helm/plugins
 
-      # Build the application package
-      cd stx-${APP_NAME}-helm; tar -czvf ../${APP_NAME_2}_pkg.tar.gz *
+    # Save a md5 checksum
+    cd stx-${APP_NAME}-helm; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
 
-      # remove all extra the folders and files created during packaging
-      rm stx-${APP_NAME}-helm/checksum.md5
-      rm -r stx-${APP_NAME}-helm/charts/
-      rm -r stx-${APP_NAME}-helm/plugins/
+    # Build the application package
+    cd stx-${APP_NAME}-helm; tar -czvf ../${APP_NAME_2}_pkg.tar.gz *
 
-```
+    # remove all extra the folders and files created during packaging
+    rm stx-${APP_NAME}-helm/checksum.md5
+    rm -r stx-${APP_NAME}-helm/charts/
+    rm -r stx-${APP_NAME}-helm/plugins/
+  ```
