@@ -64,17 +64,15 @@ environment variables.
         - name: SERVER
           value: <central IP address>
       ```
-      [//]: # (TODO: add video here)
       2. Apply the new override:
       ```shell
       source /etc/platform/openrc; system helm-override-update --values /path/to/node-overrides.yaml poc-starlingx poc-starlingx default
       ```
-      [//]: # (TODO: add video here)
       3. Deploy the application with:
       ```shell
       source /etc/platform/openrc; system application-apply poc-starlingx
       ```
-      [//]: # (TODO: add video here)
+      ![apply node gif](README/apply-node.gif)
 
 ## Application Demo
 
