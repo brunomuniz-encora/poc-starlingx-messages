@@ -112,7 +112,7 @@ the configured threshold for the `node`, is sent to the `central`. Points above
 the red line in the timeseries represent the data from each node that is sent to
 the `central`.
 
-[//]: # (TODO Add screenshot of the whole thing here.)
+![Demo overview](README/demo_overview.png)
 
 When a `node` is, for any reason, not able to send data to the `central`, it
 continues to generate and accumulate data. 
@@ -120,24 +120,28 @@ continues to generate and accumulate data.
 > _NOTE_: This offline status can be simulated with the click of a button in
 this demonstration.
 
-[//]: # (TODO: turning nodes offilne and showing how it reflects on the timeseries)
+![Turn nodes offline](README/app-demo-part-turn-offline.gif)
 
-Notice how the number of reported events has gone down from around X to Y.
+Notice how the number of reported events has gone down from around 12 to 2 and
+the aggregated Threat Index went from around 11 to 8 during the time that 
+`node`s 1 and 2 were offline.
 
-[//]: # (TODO: update X and Y accoding to recording)
-
-When the `node` is able to reach the central again, accumulated data on the node
+When the `node`s are able to reach the `central` again, accumulated data
 is then sent to the `central`.
 
-[//]: # (TODO turn nodes online again and show how it reflects on both central's graphs)
+![Turn nodes online](README/app-demo-part-turn-online.gif)
 
-Processing of the new data by the `central` is shown as a spike of events
-received (second graph on the `central`'s admin page). The events data, on the
-other hand, are reprocessed and the first graph is updated accordingly.
+The `central` takes its time processing the recent burst of data and:
+
+- updates its first graph to reflect the new data received by the `node`s;
+- shows a spike of events received on the second graph. 
 
 ## The whole process
 
-The whole process of deploying and demoing the app can be seen in the video
-below:
+Installing StarlingX (automated script):
 
-[//]: # (TODO Add complete video here.)
+[![Complete install](README/install_thumb.png)](https://www.youtube.com/watch?v=6z7EV17Emcw)
+
+Deploying and demonstration:
+
+[![Complete install](README/demo_thumb.png)](https://youtu.be/IvBomQANXlo)
