@@ -62,7 +62,7 @@ class CentralRequestHandler(BaseHTTPRequestHandler):
                    '   </head>\n'\
                    '   <body>\n'\
                    '       <h2 id="title">Threat tracker (version: '\
-                   '                1.5.0)</h2>\n'\
+                   '                1.5.1)</h2>\n'\
                    f'       <h4>Threat index: {threat_index}</h4>' \
                    f'       {html_node_events}' \
                    f'       {html_clients_table}' \
