@@ -1,5 +1,5 @@
 app_name: poc-starlingx
-app_version: 1.5.1
+app_version: 1.5.2
 helm_repo: stx-platform
 
 maintain_user_overrides: true
