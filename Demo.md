@@ -110,10 +110,10 @@ was created on the `node`);
 - a timeseries of received events (based on `central`'s timestamp when the event
 was received).
 
-All 4 `node`s, to the left, are constantly generating new data which, if above
-the configured threshold for the `node`, is sent to the `central`. Points above
-the red line in the timeseries represent the data from each node that is sent to
-the `central`.
+All 4 `node`s, to the left, are constantly generating new data. This random data
+is generated using a long tail distribution and, if above a configured threshold
+for the `node`, the data is sent to the `central`. Points above the red line in
+the timeseries represent the data from each node that is sent to the `central`.
 
 ![Demo overview](README/demo_overview.png)
 

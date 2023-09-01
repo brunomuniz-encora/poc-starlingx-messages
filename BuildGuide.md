@@ -240,7 +240,7 @@ python3-k8sapp-APP-NAME/
   overrides.
 
 * `kustomize_APP_NAME.py`: This plugin is used to make changes to the top-level
-  `kustomization` resource list based on the platform mode.
+  kustomization resource list based on the platform mode.
 
 * `lifecycle_APP_NAME.py`: Responsible for performing lifecycle actions on the
   application using the lifecycle hooks of the StarlingX Platform.
@@ -249,7 +249,7 @@ python3-k8sapp-APP-NAME/
   plugins.
 
 It is important to notice that most of the files above, although nice to have,
-are not mandatory. Files like the `kustomize_*` and lifecycle plugins will only
+are not mandatory. Files like the `kustomize_*` and `lifecycle_*` plugins will only
 exist if the application itself requires that these types of actions are 
 necessary.
 
@@ -325,6 +325,15 @@ The `sysinv` folder in the [StarlingX config repository](https://opendev.org/sta
 contains a multitude of functions and variables that may be helpful in the
 development of application plugins.
 
+Finally, the `test.py` file, although not mandatory, is considered a good coding
+practice to test the StarlingX App and its plugins. If your app will be
+integrated to the StarlingX Platform and managed by the community, tests are
+mandatory.
+
+### Other files
+
+[//]: # (This section needs help from the Community)
+
 Below is an example implementation of the `setup.py` file:
 
 ```shell
@@ -381,11 +390,6 @@ systemconfig.app_lifecycle =
 [bdist_wheel]
 universal = 1
 ```
-
-Finally, the `test.py` file, although not mandatory, is considered a good coding
-practice to test the StarlingX App and its plugins. If your app will be
-integrated to the StarlingX Platform and managed by the community, tests are
-mandatory.
 
 ## Application structure
 
