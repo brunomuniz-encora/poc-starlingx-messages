@@ -12,10 +12,10 @@ This guide describes the steps to deploy an application as a **StarlingX App**.
 
 As the StarlingX Platform manages a distributed Kubernetes cluster, for an
 application to be deployed as a StarlingX App it needs to be designed so it can
-run on [Kubernetes](kubernetes.io). 
+run on [Kubernetes](https://kubernetes.io/).
 
-Additionally, it needs to provide a [Helm Chart](helm.sh) which will be managed
-via [Flux](fluxcd.io).
+Additionally, it needs to provide a [Helm Chart](https://helm.sh/) which will be managed
+via [Flux](https://fluxcd.io/).
 
 ## FluxCD Manifest
 
