@@ -49,32 +49,7 @@ above.
 
 ## Running in StarlingX
 
-Overall steps (example):
-
-- Run `make package-stx`: a `poc-starlingx-stx-pkg.tar.gz` file is created.
-- Copy the file above to your StarlingX box: `scp ...`.
-- Upload package with:
-  ```shell
-  system application-upload poc-starlingx-stx-pkg.tar.gz
-  ```
-- Optionally, generate a Helm overrides file, for example:
-  ```shell
-  env:
-    - name: MODE
-      value: server
-  
-  kube:
-    port: 32100
-    name: poc-starlingx # will affect names of pods
-  ```
-- Optionally, apply the new override:
-  ```shell
-  system helm-override-update poc-starlingx poc-starlingx default
-  ```
-- Deploy the application with:
-  ```shell
-  system application-apply poc-starlingx
-  ```
+See [Demo](Demo.md) (10-minutes reading).
 
 ### Optional overrides
 
