@@ -1,24 +1,8 @@
-VERSION := $(shell cat VERSION)
-
-#################################
-### Docker packaging of ./src ###
-#################################
-
-docker-build:
-	echo "Attention, this is just a helper, it expects 'brunomuniz' to be logged in"
-	echo "We might automate this, if necessary, in the future"
-	echo "Alright? (yes)"
-	read y
-	docker build -t brunomuniz/poc-starlingx:$(VERSION) .
-
-docker-push-latest: docker-build
-	docker tag brunomuniz/poc-starlingx:$(VERSION) brunomuniz/poc-starlingx:latest
-	docker push brunomuniz/poc-starlingx:$(VERSION)
-	docker push brunomuniz/poc-starlingx:latest
-
-###############################
-### StarlingX App packaging ###
-###############################
+#####################################################################################################################
+### StarlingX App packaging. ########################################################################################
+### This section is an implementation of what's specified in the BuildGuide. ########################################
+### See https://github.com/bmuniz-daitan/poc-starlingx-messages/blob/main/BuildGuide.md#packaging-the-application ###
+#####################################################################################################################
 
 CHART_NAME := $(shell cat helm-chart/Chart.yaml | grep name | awk -F ': ' '{print $$2}')
 CHART_VERSION := $(shell cat helm-chart/Chart.yaml | grep -E '^version' | awk -F ': ' '{print $$2}')
@@ -45,9 +29,10 @@ package-stx: package-helm package-plugin
 	rm -r stx-packaging/charts/
 	rm -r stx-packaging/plugins/
 
-###########################################################
-### Debian packaging (below) is here just for reference ###
-###########################################################
+#################################
+######## Debian packaging #######
+#### (this is just a helper) ####
+#################################
 
 TEMP_DIR := $(shell mktemp -d)
 DEBIAN_DIR = $(TEMP_DIR)/DEBIAN
@@ -106,3 +91,21 @@ package-debian: debian-write-prerm
 	dpkg-deb --build $(TEMP_DIR) .
 	echo 'You can now install the package with "sudo dpkg -i <.deb file>".'
 
+#################################
+### Docker packaging of ./src ###
+#### (this is just a helper) ####
+#################################
+
+VERSION := $(shell cat VERSION)
+
+docker-build:
+	echo "Attention, this is just a helper, it expects 'brunomuniz' to be logged in"
+	echo "We might automate this, if necessary, in the future"
+	echo "Alright? (yes)"
+	read y
+	docker build -t brunomuniz/poc-starlingx:$(VERSION) .
+
+docker-push-latest: docker-build
+	docker tag brunomuniz/poc-starlingx:$(VERSION) brunomuniz/poc-starlingx:latest
+	docker push brunomuniz/poc-starlingx:$(VERSION)
+	docker push brunomuniz/poc-starlingx:latest
