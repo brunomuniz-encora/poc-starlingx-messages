@@ -22,10 +22,9 @@ package-stx: package-helm package-plugin
 	mkdir -p stx-packaging/plugins
 	mv poc-starlingx*.tgz stx-packaging/charts/
 	mv stx-plugin/k8sapp_poc_starlingx/k8sapp_poc_starlingx*.whl stx-packaging/plugins/
-	cd stx-packaging; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
+	cd stx-packaging; find . -type f ! -name '*.sha256' -print0 | xargs -0 sha256sum > ../poc-starlingx-stx-pkg.tar.gz.sha256
 	cd stx-packaging; tar -czvf ../poc-starlingx-stx-pkg.tar.gz *
 	# clean up
-	rm stx-packaging/checksum.md5
 	rm -r stx-packaging/charts/
 	rm -r stx-packaging/plugins/
 

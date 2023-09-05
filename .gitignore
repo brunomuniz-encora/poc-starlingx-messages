@@ -10,3 +10,5 @@ stx-plugin/k8sapp_poc_starlingx/dist
 stx-plugin/k8sapp_poc_starlingx/build
 stx-plugin/k8sapp_poc_starlingx/*.egg-info
 __pycache__
+*.md5
+*.sha256

@@ -498,44 +498,38 @@ Below is an example of how this can be achieved using the structure provided in
 this repository:
 
 ```shell
-export APP_NAME="app-name"
-export APP_NAME_2="app2_name"
+export APP_NAME="app_name"
 ```
 
 ```shell
-# Package the helm charts
+# Assuming you Helm chart source code is in the helm-chart directory.
+# Package the helm charts:
 helm package helm-chart/
 
-# Package the plugin(s) in the Wheel format
-cd python3-k8sapp-${APP_NAME}; \
-python3 setup.py bdist_wheel \
---universal -d k8sapp_${APP_NAME_2}
+# Assuming the StarlingX Plugin is in the directory stx-plugin/k8sapp_${APP_NAME}.
+# Package the plugin(s) in the Wheel format:
+cd stx-plugin; \
+python3 setup.py bdist_wheel -d k8sapp_${APP_NAME}
+## Clean up files and folders
+rm -r k8sapp_${APP_NAME}/build/ \
+k8sapp_${APP_NAME}/k8sapp_${APP_NAME_2}.egg-info/ \
+k8sapp_${APP_NAME}/AUTHORS k8sapp_${APP_NAME}/ChangeLog
 
-# Clean up files and folders
-rm -r python3-k8sapp-${APP_NAME}/build/ \
-python3-k8sapp-${APP_NAME}/k8sapp_${APP_NAME_2}.egg-info/ \
-python3-k8sapp-${APP_NAME}/AUTHORS python3-k8sapp-${APP_NAME}/ChangeLog
-
-# Package the StarlingX App
-# Create folders inside stx-APP-NAME-helm/ for the chart and plugin packages
-mkdir -p stx-${APP_NAME}-helm/charts
-mkdir -p stx-${APP_NAME}-helm/plugins
-
-# Move the helm charts package to the stx-APP-NAME-helm/charts folder
-mv ${APP_NAME_2}*.tgz stx-${APP_NAME}-helm/charts/
-
-# Move the plugin (wheel package) to the stx-APP-NAME-helm/plugins folder
-mv python3-k8sapp-${APP_NAME}/k8sapp_APP_NAME${APP_NAME_2}k8sapp_${APP_NAME_2}*.whl \
-stx-${APP_NAME}-helm/plugins
-
-# Create a md5 checksum
-cd stx-${APP_NAME}-helm; find . -type f ! -name '*.md5' -print0 | xargs -0 md5sum > checksum.md5
-
-# Compress everything into the StarlingX App package
-cd stx-${APP_NAME}-helm; tar -czvf ../${APP_NAME_2}_pkg.tar.gz *
-
-# Clean up files and folders
-rm stx-${APP_NAME}-helm/checksum.md5
-rm -r stx-${APP_NAME}-helm/charts/
-rm -r stx-${APP_NAME}-helm/plugins/
+# Assuming that the template for your StarlingX App package is in ./stx-packaging
+# Assuming your Helm chart's name is $APP_NAME 
+# Package the StarlingX App:
+## Create folders inside ./stx-packaging/ for the chart and plugin packages
+mkdir -p stx-packaging/charts
+mkdir -p stx-packaging/plugins
+## Move the helm charts package to the stx-packaging/charts folder
+mv ${APP_NAME}*.tgz stx-packaging/charts/
+## Move the plugin (wheel package) to the stx-packaging/plugins folder
+mv stx-plugin/k8sapp_${APP_NAME}*.whl stx-packaging/plugins/
+## Create a sha256 checksum
+cd stx-packaging; find . -type f ! -name '*.sha256' -print0 | xargs -0 sha256sum > ../${APP_NAME}-stx-pkg.tar.gz.sha256
+## Compress everything into the StarlingX App package
+cd stx-packaging; tar -czvf ../${APP_NAME}-stx-pkg.tar.gz *
+## Clean up files and folders
+rm -r stx-packaging/charts/
+rm -r stx-packaging/plugins/
 ```
