@@ -505,16 +505,20 @@ export APP_NAME="app_name"
 # Assuming you Helm chart source code is in the helm-chart directory.
 # Package the helm charts:
 helm package helm-chart/
+```
 
+```shell
 # Assuming the StarlingX Plugin is in the directory stx-plugin/k8sapp_${APP_NAME}.
 # Package the plugin(s) in the Wheel format:
 cd stx-plugin; \
 python3 setup.py bdist_wheel -d k8sapp_${APP_NAME}
 ## Clean up files and folders
-rm -r k8sapp_${APP_NAME}/build/ \
-k8sapp_${APP_NAME}/k8sapp_${APP_NAME_2}.egg-info/ \
-k8sapp_${APP_NAME}/AUTHORS k8sapp_${APP_NAME}/ChangeLog
+rm -r build/ \
+k8sapp_${APP_NAME}.egg-info/ \
+AUTHORS ChangeLog
+```
 
+```shell
 # Assuming that the template for your StarlingX App package is in ./stx-packaging
 # Assuming your Helm chart's name is $APP_NAME 
 # Package the StarlingX App:
@@ -524,12 +528,13 @@ mkdir -p stx-packaging/plugins
 ## Move the helm charts package to the stx-packaging/charts folder
 mv ${APP_NAME}*.tgz stx-packaging/charts/
 ## Move the plugin (wheel package) to the stx-packaging/plugins folder
-mv stx-plugin/k8sapp_${APP_NAME}*.whl stx-packaging/plugins/
+mv stx-plugin/k8sapp_${APP_NAME}/k8sapp_${APP_NAME}*.whl stx-packaging/plugins/
 ## Create a sha256 checksum
-cd stx-packaging; find . -type f ! -name '*.sha256' -print0 | xargs -0 sha256sum > ../${APP_NAME}-stx-pkg.tar.gz.sha256
+cd stx-packaging
+find . -type f ! -name '*.sha256' -print0 | xargs -0 sha256sum > ../${APP_NAME}-stx-pkg.tar.gz.sha256
 ## Compress everything into the StarlingX App package
-cd stx-packaging; tar -czvf ../${APP_NAME}-stx-pkg.tar.gz *
+tar -czvf ../${APP_NAME}-stx-pkg.tar.gz *
 ## Clean up files and folders
-rm -r stx-packaging/charts/
-rm -r stx-packaging/plugins/
+rm -r charts/
+rm -r plugins/
 ```
