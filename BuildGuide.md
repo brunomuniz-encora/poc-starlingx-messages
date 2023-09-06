@@ -502,7 +502,7 @@ export APP_NAME="app_name"
 ```
 
 ```shell
-# Assuming you Helm chart source code is in the helm-chart directory.
+# Assuming your Helm chart source code is in the helm-chart directory.
 # Package the helm charts:
 helm package helm-chart/
 ```
