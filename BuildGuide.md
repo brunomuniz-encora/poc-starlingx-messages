@@ -20,10 +20,10 @@ via [Flux](https://fluxcd.io/).
 ## FluxCD Manifest
 
 The FluxCD Manifest for the StarlingX App must follow a specific structure.
-The overall, generic structure of a StarlingX App's FluxCD Manifest is as 
+The overall, generic structure of a StarlingX App's FluxCD Manifest is as
 follows:
 
-> _NOTE_: `APP-NAME` is a placeholder and should change according to your app's 
+> _NOTE_: `APP-NAME` is a placeholder and should change according to your app's
 name and/or dependencies that your app may need.
 
 ```shell
@@ -195,7 +195,7 @@ generatorOptions:
 The plugins for the StarlingX Apps will vary from one application to another,
 however, a handful of files must exist for the StarlingX Platform to deploy the
 StarlingX App. For a complete overview of different plugins used in the
-various applications available now for StarlingX see 
+various applications available now for StarlingX see
 [StarlingX applications repository search](https://opendev.org/starlingx?sort=recentupdate&language=&q=app)
 .
 
@@ -231,26 +231,26 @@ python3-k8sapp-APP-NAME/
 └── setup.py
 ```
 
-* `constants.py`: This file is used to hold the constants that will be used on
+- `constants.py`: This file is used to hold the constants that will be used on
   the plugin(s).
 
-* `helm/APP_NAME.py`: File responsible for overriding methods that will be used
+- `helm/APP_NAME.py`: File responsible for overriding methods that will be used
   to create the Helm overrides for the StarlingX App. Usually for every APP_NAME
-  folder in the FluxCD Manifest, an APP_NAME.py plugin is used to create its 
+  folder in the FluxCD Manifest, an APP_NAME.py plugin is used to create its
   overrides.
 
-* `kustomize_APP_NAME.py`: This plugin is used to make changes to the top-level
+- `kustomize_APP_NAME.py`: This plugin is used to make changes to the top-level
   kustomization resource list based on the platform mode.
 
-* `lifecycle_APP_NAME.py`: Responsible for performing lifecycle actions on the
+- `lifecycle_APP_NAME.py`: Responsible for performing lifecycle actions on the
   application using the lifecycle hooks of the StarlingX Platform.
 
-* `test.py`: File or files that holds unit tests for the application and 
+- `test.py`: File or files that holds unit tests for the application and
   plugins.
 
 It is important to notice that most of the files above, although nice to have,
 are not mandatory. Files like the `kustomize_*` and `lifecycle_*` plugins will only
-exist if the application itself requires that these types of actions are 
+exist if the application itself requires that these types of actions are
 necessary.
 
 The only mandatory file is the `helm/APP_NAME.py` plugin, which is responsible
@@ -344,7 +344,7 @@ setuptools.setup(
     pbr=True)
 ```
 
-The `setup.cfg` file implementation, although longer, is easy, as most of the 
+The `setup.cfg` file implementation, although longer, is easy, as most of the
 implementation follows a recipe:
 
 ```shell
@@ -538,3 +538,10 @@ tar -czvf ../${APP_NAME}-stx-pkg.tar.gz *
 rm -r charts/
 rm -r plugins/
 ```
+
+## App-gen tool
+
+Our team made an effort to try making the idea of a StarlingX app generator tool
+come alive [again](https://opendev.org/starlingx/tools/src/branch/master/app-gen-tool)
+in this [repository](https://github.com/Danmcaires/StarlingX-App-Generator).
+Please feel free to test if you have a contenarized and helmerized application.
