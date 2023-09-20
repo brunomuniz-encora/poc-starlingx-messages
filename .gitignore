@@ -12,3 +12,4 @@ stx-plugin/k8sapp_poc_starlingx/*.egg-info
 __pycache__
 *.md5
 *.sha256
+.vscode
