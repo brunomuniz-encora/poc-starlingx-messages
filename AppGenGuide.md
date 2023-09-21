@@ -283,7 +283,7 @@ The generate will create 3 main plugins, the helm, the kustomize and the lifecyc
 - The `lifecycle_APP_NAME.py` is responsible for performing lifecycle actions on the
   application using the lifecycle hooks of the StarlingX Platform.
 
-The files created by the generator will have empty implementations and are up to
+The files created by the generator will have empty implementations and is up to
 the developer to implement everything that is necessary for the application to
 run as intended.
 
@@ -293,7 +293,7 @@ helpful in the development of application plugins.
 ### Other files
 
 For the customization of the application the modifications above, in the FluxCD
-and the plugins should be enough for the application to run as expected in the
+and the plugins, should be enough for the application to run as expected in the
 StarlingX platform.
 
 With that in mind, it is recommended to check if the `metadata` and the `setup.cfg`
