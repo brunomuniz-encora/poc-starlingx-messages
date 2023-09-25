@@ -260,7 +260,7 @@ the current directory.
 - `--no-package`: only creates the FluxCD manifest, plugins and the
   metadata file, without compressing them in a tarball.
 - `--package-only`: create the plugins wheels, sha256 file, helm-chart tarball
-  and package the entire application into a tarball. TODO: I don't understand how this option goes together with the one above.
+  and package the entire application into a tarball.
 
 This means that, in order to be able to make additional configuration, one must:
 
