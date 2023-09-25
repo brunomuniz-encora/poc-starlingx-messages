@@ -44,14 +44,21 @@ which will be managed via [Flux](https://fluxcd.io/).
 
     ![file-structure](BuildGuide/file-strucuture-1.png)
 
-2. Then copy the application helm-chart folders to the helm-chart app-generator directory, for the messages poc, the helm-chart directory is already in the expected place.
+2. Then copy the application helm-chart folders to the helm-chart app-generator
+   directory, for the messages poc, the helm-chart directory is already in the
+   expected place.
 
-3. Create a copy of the ```app_manifest.yaml``` file for redundancy in case becomes necessary to look at it without modifications
+3. Create a copy of the ```app_manifest.yaml``` file for redundancy in case
+   becomes necessary to look at it without modifications
 
-4. Now the ```app_manifest.yaml``` needs to be configured, and this is the most important configuration step since it's the only file that will be needed to build the application. The app manifest configuration can be divided into three steps:
-    1. App manifest configuration
-    2. App Metadata Configuration
-    3. App Setup Configuration
+4. Now the ```app_manifest.yaml``` needs to be configured, and this is the most
+   important configuration step since it's the only file that will be needed to
+   build the application. The app manifest configuration can be divided into
+   three parts:
+
+    - App manifest configuration
+    - App Metadata Configuration
+    - App Setup Configuration
 
 ### App manifest configuration
 
@@ -59,16 +66,20 @@ which will be managed via [Flux](https://fluxcd.io/).
 
    ![app manifest config](BuildGuide/app-manifest-config-empty.png)
 
-   These are the minimum required fields that will need to be filled in order for the app-generator to work properly.
+   These are the minimum required fields that will need to be filled in order
+   for the app-generator to work properly.
 
    Brief fields explanation:
    - **appName**: desired StarlingX application name
    - **appVersion**: desired StarlingX application version
-   - **namespace**: desired StarlingX application namespace (note that this namespace is not the same as the Kubernetes namespace)
-   - **chart**: create a copy of name, version, path and chartGroup for every helm-chart in your application
+   - **namespace**: desired StarlingX application namespace (note that this
+     namespace is not the same as the Kubernetes namespace)
+   - **chart**: create a copy of name, version, path and chartGroup for every
+     helm-chart in your application
      - **name**: your helm-chart name as it is in the chart metadata
      - **version**: your app version as it is in the chart metadata
-     - **path**: helm-chart directory, helm repo or helm tgz path. Currently we only tested with the helm-chart directory
+     - **path**: helm-chart directory, helm repo or helm tgz path. Currently
+       only helm-chart in directories have been tested
      - **chartGroup**: default is _application-name-charts_
    - **chartGroup**
      - **name**: Only one chart group per application
@@ -76,22 +87,34 @@ which will be managed via [Flux](https://fluxcd.io/).
 
 ### Metadata File Configuration
 
-6. In this part of the file, the application ```metadata.yaml``` file will be configured. The app generator automatically creates the _app_name_ and _app_version_ fields from the values put in the **appManifestFile-config** above. Other values may be passed in order to enable some features within the StarlingX  platform. For a better understanding of each of the attributes in this yaml file please refer to [this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml)
-in order to determine the necessary attributes for the application.
+6. In this part of the file, the application ```metadata.yaml``` file will be
+   configured. The app generator automatically creates the _app_name_ and
+   _app_version_ fields from the values put in the **appManifestFile-config**
+   above. Other values may be passed in order to enable some features within the
+   StarlingX  platform. For a better understanding of each of the attributes in
+   this yaml file please refer to
+   [this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml)
+   in order to determine the necessary attributes for the application.
 
 ### App Setup configuration
 
-7. As in the [app manifest configuration](#app-manifest-configuration), fill the required fields
+7. As in the [app manifest configuration](#app-manifest-configuration), fill the
+   required fields
 
     ![setup cfg image](BuildGuide/setup-cfg.png)
 
 - **author/author-email/url**: Provide de information about the author or team.
-- **classifier**: Please see the ```app_manifest_example.yaml``` to have an idea of this configuration. it must contain *Verificar com o Bruno*
-- **other values**: If you're a more advanced stx user and need to set other configurations, just create other tags and if you need to, please consult [this](https://opendev.org/starlingx/app-dell-storage/src/branch/master/python3-k8sapp-dell-storage/k8sapp_dell_storage/setup.cfg) for more examples and [this](https://setuptools.pypa.io/en/latest/userguide/declarative_config.html) documentation page for other options.
+- **classifier**: Please see the ```app_manifest_example.yaml``` to have an idea
+  of this configuration. it must contain *Verificar com o Bruno*
+- **other values**: If you're a more advanced stx user and need to set other
+  configurations, just create other tags and if you need to, please consult
+  [this](https://opendev.org/starlingx/app-dell-storage/src/branch/master/python3-k8sapp-dell-storage/k8sapp_dell_storage/setup.cfg)
+  for more examples and[this](https://setuptools.pypa.io/en/latest/userguide/declarative_config.html) documentation page for other options.
 
 ## Run the application
 
-With the app_manifest.yaml configured it is expected to look approximately like the following:
+With the app_manifest.yaml configured it is expected to look approximately like
+the following:
 
 
 ```
@@ -302,7 +325,8 @@ attention if the modifications on the plugin file should be reflected in it.
 
 ### Packaging the application
 
-To finish the application setup and make it ready to be deployed on your StarlingX cluster, simply run
+To finish the application setup and make it ready to be deployed on your
+StarlingX cluster, simply run
 
 ```shell
 python3 app-gen.py -i app_manifest.yaml --package-only
