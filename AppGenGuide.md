@@ -48,12 +48,7 @@ which will be managed via [Flux](https://fluxcd.io/) by StarlingX itself.
 
    ![file-structure](BuildGuide/file-strucuture-1.png)
 
-2. Copy the [application's helm-chart(s)](https://helm.sh/docs/topics/charts/#the-chart-file-structure)
-   to the helm-chart directory.
-   
-   > _NOTE_: TODO we should get a path to the helm chart, not copy things around.
-
-3. Create a copy of the `app_manifest.yaml.template` file:
+2. Create a copy of the `app_manifest.yaml.template` file:
    ```shell
    cp app_manigest.yaml.template app_manifest.yaml
    ```
