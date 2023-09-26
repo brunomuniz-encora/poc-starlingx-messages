@@ -1,3 +1,5 @@
+TODO: is there any info on this file that needs to be on the new AppGenGuide before deleting this file?
+
 # Deploy an application as a StarlingX app
 
 This guide describes the steps to deploy an application as a **StarlingX App**.
