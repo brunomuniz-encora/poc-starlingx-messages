@@ -90,7 +90,7 @@ namespace is not the same as the Kubernetes namespace).
 - **chart** section: an array with an object for every Helm chart in your
 application. Each object contains:
   - **name** field: your Helm chart name as it is in the chart metadata.
-  - **version** field: your app version as it is in the chart metadata.
+  - **version** field: your chart version as it is in the chart metadata.
   - **path** field: relative path to the Helm chart directory, Helm repo or
   Helm package file. 
   > _NOTE_: Currently only Helm charts in directories have been tested.
