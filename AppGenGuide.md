@@ -154,8 +154,6 @@ the name of the chart will be created.
 
 > **_NOTE_**: The `CHART-NAME-static-overrides.yaml` file will be empty.
 
-> TODO. Why?
-
 ### Plugins
 
 After the creation of the FluxCD Manifest, the generator will also create a set
