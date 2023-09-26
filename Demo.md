@@ -30,8 +30,8 @@ the Kubernetes cluster(s) that StarlingX manages:
 
 ## Deploying PoC-StarlingX as a StarlingX App
 
-1. After [packaging the app](AppGenGuide.md), send the generated
-`poc-starlingx-stx-pkg.tar.gz` file to the StarlingX active controller(s)
+1. After [packaging the app](https://github.com/Danmcaires/StarlingX-App-Generator#deploy-an-application-as-a-starlingx-app)
+, send the generated `poc-starlingx-stx-pkg.tar.gz` file to the StarlingX active controller(s)
 where you want the app(s) to run. Then you can simply run:
    ```shell
    source /etc/platform/openrc; system application-upload /path/to/poc-starlingx-stx-pkg.tar.gz
