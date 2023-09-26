@@ -1,30 +1,27 @@
-TODO: move to the App Generator repo after validation of these changes.
-
 # Deploy an application as a StarlingX app
 
 This guide describes the steps to deploy an application as a **StarlingX App** 
-utilizing the StarlingX's App Generator tool.
+utilizing the app generator tool.
 
-If you want to learn more about the app generator tool, please visit
-https://github.com/Danmcaires/StarlingX-App-Generator (this is a temporary
-repository, all relevant info/code, if any, will be moved to official
-repositories by the end of this study).
+If you want to learn more about the app generator tool, please visit Its
+[repository](https://github.com/Danmcaires/StarlingX-App-Generator)
 
-- [Prerequisites](#prerequisites)
-- [Generate the application](#generate-the-application)
-  - [App manifest configuration](#app-manifest-configuration)
-  - [Metadata File Configuration](#metadata-file-configuration)
-  - [App Setup configuration](#app-setup-configuration)
-- [Run the application](#run-the-application)
-  - [FluxCD Manifest](#fluxcd-manifest)
-  - [Plugins](#plugins)
-  - [Metadata](#metadata)
-  - [Tarballs](#tarballs)
-- [Customizing the application](#customizing-the-application)
-  - [FluxCD Manifest](#fluxcd-manifest-1)
-  - [Plugins](#plugins-1)
-  - [Other files](#other-files)
-  - [Packaging the application](#packaging-the-application)
+- [Deploy an application as a StarlingX app](#deploy-an-application-as-a-starlingx-app)
+  - [Prerequisites](#prerequisites)
+  - [Generate the application](#generate-the-application)
+    - [App manifest configuration](#app-manifest-configuration)
+    - [Metadata File Configuration](#metadata-file-configuration)
+    - [App Setup configuration](#app-setup-configuration)
+  - [Run the application](#run-the-application)
+    - [FluxCD Manifest](#fluxcd-manifest)
+    - [Plugins](#plugins)
+    - [Metadata](#metadata)
+    - [Tarballs](#tarballs)
+  - [Customizing the application](#customizing-the-application)
+    - [FluxCD Manifest](#fluxcd-manifest-1)
+    - [Plugins](#plugins-1)
+    - [Other files](#other-files)
+    - [Packaging the application](#packaging-the-application)
 
 ## Prerequisites
 
@@ -33,121 +30,139 @@ application to be deployed as a StarlingX App it needs to be designed so it can
 run on [Kubernetes](https://kubernetes.io/).
 
 Additionally, it needs to provide a [Helm Chart](https://helm.sh/)
-which will be managed via [Flux](https://fluxcd.io/) by StarlingX itself.
+which will be managed via [Flux](https://fluxcd.io/).
 
-## Generate the StarlingX Application package
+## Generate the application
 
-1. Clone the app-generator repository.
+1. Clone the app-generator repository
+  
    ```shell
    git clone https://github.com/Danmcaires/StarlingX-App-Generator.git
    ```
 
-   This is what you'll find in the root folder of the repository:
- 
-   > _NOTE_: TODO why is there a reference to the poc-starlingx app already? Update image!
+   please note that the repository structure will be:
 
-   ![file-structure](BuildGuide/file-strucuture-1.png)
+    ![file-structure](BuildGuide/file-strucuture-1.png)
 
-2. Copy the [application's helm-chart(s)](https://helm.sh/docs/topics/charts/#the-chart-file-structure)
-   to the helm-chart directory.
-   
-   > _NOTE_: TODO we should get a path to the helm chart, not copy things around.
+2. Then copy the application helm-chart folders to the helm-chart app-generator
+   directory, for the messages poc, the helm-chart directory is already in the
+   expected place.
 
-3. Create a copy of the `app_manifest.yaml.template` file:
-   ```shell
-   cp app_manigest.yaml.template app_manifest.yaml
-   ```
+3. Create a copy of the ```app_manifest.yaml``` file for redundancy in case
+   becomes necessary to look at it without modifications
 
-The `app_manifest.yaml` is the most important configuration step since it
-specifies everything necessary to build the StarlingX application.
+4. Now the ```app_manifest.yaml``` needs to be configured, and this is the most
+   important configuration step since it's the only file that will be needed to
+   build the application. The app manifest configuration can be divided into
+   three parts:
 
-The app manifest configuration can be divided into three parts, which will
-have their own dedicated section below:
-
-- [App manifest configuration](#app-manifest-configuration)
-- [Metadata file configuration](#metadata-file-configuration)
-- [App Setup Configuration](#app-setup-configuration)
+    - App manifest configuration
+    - App Metadata Configuration
+    - App Setup Configuration
 
 ### App manifest configuration
 
-In this stage the section **appManifestFile-config** from the
-`app_manifest.yaml` will be configured.
+5. In this stage the fields inside the **appManifestFile-config** will be configured
 
-![app manifest config](BuildGuide/app-manifest-config-empty.png)
+   ![app manifest config](BuildGuide/app-manifest-config-empty.png)
 
-These are the minimum required fields that will need to be filled in order
-for the StarlingX App Generator to work properly.
+   These are the minimum required fields that will need to be filled in order
+   for the app-generator to work properly.
 
-Below you will find a brief explanation of every one of the required fields
-which will help you fill them out for you application:
-
-- **appName** field: desired StarlingX application name, referenced throughout
-the whole system.
-- **appVersion** field: the version of the application that the generated
-package will represent.
-- **namespace** field: desired StarlingX application namespace (note that this
-namespace is not the same as the Kubernetes namespace).
-- **chart** section: an array with an object for every Helm chart in your
-application. Each object contains:
-  - **name** field: your Helm chart name as it is in the chart metadata.
-  - **version** field: your chart version as it is in the chart metadata.
-  - **path** field: relative path to the Helm chart directory, Helm repo or
-  Helm package file. 
-  > _NOTE_: Currently only Helm charts in directories have been tested.
-  - **chartGroup** field: default is _application-name-charts_.
-- **chartGroup** section:
-  - **name**: only one chart group per application.
-  - **chart_names**: a list of the names of the charts from your application.
-
-> _NOTE_: TODO can't this be automated since it's just a copy from other values already set?
+   Brief fields explanation:
+   - **appName**: desired StarlingX application name
+   - **appVersion**: desired StarlingX application version
+   - **namespace**: desired StarlingX application namespace (note that this
+     namespace is not the same as the Kubernetes namespace)
+   - **chart**: create a copy of name, version, path and chartGroup for every
+     helm-chart in your application
+     - **name**: your helm-chart name as it is in the chart metadata
+     - **version**: your app version as it is in the chart metadata
+     - **path**: helm-chart directory, helm repo or helm tgz path. Currently
+       only helm-chart in directories have been tested
+     - **chartGroup**: default is _application-name-charts_
+   - **chartGroup**
+     - **name**: Only one chart group per application
+     - **chart_names**: a list of the names of the charts from your application
 
 ### Metadata File Configuration
 
-In this stage the section **metadataFile-config** from the
-`app_manifest.yaml` will be configured.
-
-The app generator automatically creates the _app_name_ and _app_version_ fields
-from the values put in the **appManifestFile-config** above. Other values may
-be passed in order to enable some features within the StarlingX  platform. For
-a better understanding of each attribute in this section please refer to
-[this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml).
-
->_NOTE_: I don't understando this whole section and can't match what I read here with the template file.
+6. In this part of the file, the application ```metadata.yaml``` file will be
+   configured. The app generator automatically creates the _app_name_ and
+   _app_version_ fields from the values put in the **appManifestFile-config**
+   above. Other values may be passed in order to enable some features within the
+   StarlingX  platform. For a better understanding of each of the attributes in
+   this yaml file please refer to
+   [this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml)
+   in order to determine the necessary attributes for the application.
 
 ### App Setup configuration
 
-In this stage the section **setupFile-config** from the `app_manifest.yaml`
-will be configured.
+7. As in the [app manifest configuration](#app-manifest-configuration), fill the
+   required fields
 
-Below you will find a brief explanation of every one of the required fields
-which will help you fill them out for you application:
+    ![setup cfg image](BuildGuide/setup-cfg.png)
 
-![setup cfg image](BuildGuide/setup-cfg.png)
+- **author/author-email/url**: Provide de information about the author or team.
+- **classifier**: Please see the ```app_manifest_example.yaml``` to have an idea
+  of this configuration. it must contain *Verificar com o Bruno*
+- **other values**: If you're a more advanced stx user and need to set other
+  configurations, just create other tags and if you need to, please consult
+  [this](https://opendev.org/starlingx/app-dell-storage/src/branch/master/python3-k8sapp-dell-storage/k8sapp_dell_storage/setup.cfg)
+  for more examples and[this](https://setuptools.pypa.io/en/latest/userguide/declarative_config.html) documentation page for other options.
 
-- **metadata** section:
-  - **author/author-email/url fields**: authorship information.
-  - **classifier** section: TODO needs description of what this is.
+## Run the application
 
-This section is related to the `setup-cfg` file that will be generated. For
-more advanced use cases you may want to refer to [the documentation](https://setuptools.pypa.io/en/latest/userguide/declarative_config.html).
+With the app_manifest.yaml configured it is expected to look approximately like
+the following:
 
-## Run the StarlingX App Generator
+
+```
+appManifestFile-config:
+  appName: stx-app
+  appVersion: 1.0.1
+  namespace: default
+  chart:
+    - name: chart1
+      version: 1.0.1
+      path: /path/to/chart1
+      chartGroup: chartgroup1
+  chartGroup:
+    - name: chartgroup1
+      chart_names:
+        - chart1
+
+metadataFile-config:
+  upgrades:
+    auto_update: no 
+  maintain_attributes: true
+  maintain_user_overrides: true
+
+setupFile-config:
+  metadata: 
+      author: John Doe
+      author-email: john.doe@email.com
+      url: johndoe.com
+      classifier: # required
+        - "Operating System :: OS Independent"
+        - "License :: OSI Approved :: MIT License"
+        - "Programming Language :: Python :: 3"
+```
+
+For the generator to be completed run and generate all files, simply run
 
 ```shell
 python3 app-gen.py -i app_manifest.yaml
 ```
 
-With the command above, the StarlingX App Generator will create a set of files
-and package everything in the StarlingX format.
-
-The following sections explain in high-level the most important parts of the
-package.
+The generator will create a set of files and package everything in a format that
+the StarlingX platform will be able to interpret.
 
 ### FluxCD Manifest
 
-The generator will first create the FluxCD Manifest following the structure below:
+The generator will first create the FluxCD Manifest following the structure bellow:
 
-```shell
+```
 fluxcd-manifests/
 ├── base
 │   ├── helmrepository.yaml
@@ -161,12 +176,10 @@ fluxcd-manifests/
     └── CHART-NAME-system-overrides.yaml
 ```
 
-For every Helm chart configured in the `app_manifest.yaml` file, a folder with
-the name of the chart will be created. 
+For every helm-chart passed in the ``app_manifest.yaml`` a folder with the name
+of the chart wil created containing the above files. 
 
-> **_NOTE_**: The `CHART-NAME-static-overrides.yaml` file will be empty.
-
-> TODO. Why?
+> **_NOTE_**: The ``CHART-NAME-static-overrides.yaml`` file will be empty.
 
 ### Plugins
 
@@ -175,7 +188,7 @@ of plugins with an empty implementation.
 
 The Structure of the plugins created will be:
 
-```shell
+```
 plugins/
 ├── k8sapp_APP_NAME
 │   ├── common
@@ -195,35 +208,32 @@ plugins/
 └── setup.py
 ```
 
-The `setup.cfg` file will be created according to the
-[`setupFile-config`](#app-setup-configuration) section in the `app_manifest.yaml`.
+The ``setup.cfg`` file will be created following the information given in 
+`setupFile-config` in the ``app_manifest.yaml``.
 
 ### Metadata
 
-In the third step of the execution the `metadata.yaml` file will be generated
-with the information given in [`metadataFile-config`](#metadata-file-configuration)
-section in the `app_manifest.yaml`.
+In the third step of the execution the ``metadata.yaml`` will be generated
+with the information given in `metadataFile-config` in the ``app_manifest.yaml``.
 
 ### Tarballs
 
-After the main files have been created, the generator will start packaging
-everything.
+After the main files have been created, the generator will start packaging everything.
 
-Firstly it will package every helm-chart, that was given in the 
-`app_manifest.yaml` file, into a `.tgz` file, saving these files into a folder
-named `charts`.
+1. Firstly it will package every helm-chart, that was given in the `app_manifest`,
+into a ``.tgz`` file. Then it will save these files into a folder named charts.
 
-The generator, then, will package the plugins with the [wheel](https://peps.python.org/pep-0491/)
-format.
+2. The generator, then, will package the plugins into a wheel format.
 
-Lastly, creates a checksum sha256 signature file for the output tarball and
-the output tarball itself, which will be called
+3. Lastly it will generate a checksum sha256 file with the files that will be
+inside the application tarball.
 
-```
-<APPNAME>-<APPVERSION>.tgz
-```
+4. After all the files have been created, the generator will finally package everything
+into a tarball with the following naming
 
-The structure of the app inside the tarball will be the following:
+    > APPNAME-APPVERSION.tgz
+
+The structure of the app inside the tarball will be as follows
 
 ```shell
  APPNAME-APPVERSION.tgz/
@@ -235,42 +245,48 @@ The structure of the app inside the tarball will be the following:
 ```
 
 > **Warning:**
-> At this point, the generated package is a working StarlingX App, however it
-> contains empty templates for some files. The following sections will describe
-> how to further enhance your StarlingX App. 
+> When the generator run from the beginning to the end, the final app  tarball will
+> contain every file that the StarlingX platform requires from an application.
+> However it is essential to notice that the files that will configure the application
+> will empty, making a generic set of files with little customization.
 
 ## Customizing the application
 
-If you wish to customize Flux and the plugins for the particularities of
-your application, it is important to modify some of the generated files.
+If you wish to customize the Flux and the plugins for the particularities of
+the application, it is important to modify some of the generated files.
 
-In order to allow such customization, the generator provides additional
-functions to modify specific files in the package.
+In order to allow such customization, the generator allows the user to decide
+whether to execute the entire generator or only create the files to be modified
+to be packaged later.
 
-```shell
-python3 app-gen.py -i app_manifest.yaml [-o ./output] [--overwrite] [--no-package]|[--package-only]
-```
+The entire set of options for calling the generator is
+
+`$ python3 app-gen.py -i app_manifest.yaml [-o ./output] [--overwrite] [--no-package] [--package-only]`
 
 Where:
 
-- `-i/--input`: path to the `app_manifest.yaml` configuration file.
-- `-o/--output`: output folder. Defaults to a new folder with the app name in
-the current directory.
-- `--overwrite`: deletes existing output folder before starting.
-- `--no-package`: only creates the FluxCD manifest, plugins and the
-  metadata file, without compressing them in a tarball.
-- `--package-only`: create the plugins wheels, sha256 file, helm-chart tarball
+- ``-i/--input`` Input app_manifest.yaml file
+- ``-o/--output`` Output folder, if none is passed the generator will create a folder
+  with the app name in the current directory.
+- ``--overwrite`` Delete existing folder with the same name as the app name
+- ``--no-package`` Only creates the fluxcd manifest, the plugins and the
+  metadata file
+- ``--package-only`` Create the plugins wheels, sha256 file, helm-chart tarball
   and package the entire application into a tarball.
 
-This means that, in order to be able to make additional configuration, one must:
+In order to be able to modify the plugins and overrides before packaging the 
+application the user will need to use `--no-package` in the python call. By using
+this option the generator will:
 
-- first run the App Generator with `--no-package`;
-- then do the changes (described in the following sections);
-- finally, run the App Generator again with `--package-only`.
+- Generate the FluxCD Manifest;
+- Generate the plugins with an empty implementation;
+- Generate the metadata.yaml
+  
+After creating the above files, the app generator will end its execution.
 
 ### FluxCD Manifest
 
-[//]: # (TODO: Validate this information - what needs validation?)
+[//]: # (TODO: Validate this information)
 
 Most of the generated manifest won't need any modification, but for every 
 helm-chart in the `app_manifest.yaml`, a static overrides file will be created.
@@ -306,3 +322,14 @@ StarlingX platform.
 With that in mind, it is recommended to check if the `metadata` and the `setup.cfg`
 have been created as they should. Particularly, the `setup.cfg` may need careful
 attention if the modifications on the plugin file should be reflected in it.
+
+### Packaging the application
+
+To finish the application setup and make it ready to be deployed on your
+StarlingX cluster, simply run
+
+```shell
+python3 app-gen.py -i app_manifest.yaml --package-only
+```
+
+now, send the tarball to your StarlingX cluster and follow along the [demo guide](Demo.md)
