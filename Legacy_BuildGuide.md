@@ -1,4 +1,4 @@
-TODO: is there any info on this file that needs to be on the new AppGenGuide before deleting this file?
+> _NOTE_: This guide has been replaced and is here for historical purposes.
 
 # Deploy an application as a StarlingX app
 
