@@ -94,13 +94,15 @@ application. Each object contains:
 In this stage the section **metadataFile-config** from the
 `app_manifest.yaml` will be configured.
 
-The app generator automatically creates the _app_name_ and _app_version_ fields
-from the values put in the **appManifestFile-config** above. Other values may
-be passed in order to enable some features within the StarlingX  platform. For
-a better understanding of each attribute in this section please refer to
-[this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml).
+This section's objective is to configure the generation/creation of a
+`metadata.yaml` file, which is the core metadata file for a StarlingX App
+package.
 
->_NOTE_: I don't understando this whole section and can't match what I read here with the template file.
+This `metadata.yaml` file is very flexible, hence the **metadataFile-config**
+section is also very flexible. Other values may be passed in order to enable
+advanced features within the StarlingX platform. For a better understanding of
+each attribute in this section please refer to
+[this link](https://wiki.openstack.org/wiki/StarlingX/Containers/StarlingXAppsInternals#metadata.yaml).
 
 ### App Setup configuration
 
