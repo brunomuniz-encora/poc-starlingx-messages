@@ -37,21 +37,16 @@ which will be managed via [Flux](https://fluxcd.io/) by StarlingX itself.
 
 ## Generate the StarlingX Application package
 
-1. Clone the app-generator repository.
-   ```shell
-   git clone https://github.com/Danmcaires/StarlingX-App-Generator.git
-   ```
+Clone the app-generator repository.
+```shell
+git clone https://github.com/Danmcaires/StarlingX-App-Generator.git
+```
 
-   This is what you'll find in the root folder of the repository:
- 
-   > _NOTE_: TODO why is there a reference to the poc-starlingx app already? Update image!
+This is what you'll find in the root folder of the repository:
 
-   ![file-structure](BuildGuide/file-strucuture-1.png)
+> _NOTE_: TODO update image.
 
-2. Create a copy of the `app_manifest.yaml.template` file:
-   ```shell
-   cp app_manigest.yaml.template app_manifest.yaml
-   ```
+![file-structure](BuildGuide/file-strucuture-1.png)
 
 The `app_manifest.yaml` is the most important configuration step since it
 specifies everything necessary to build the StarlingX application.
@@ -93,8 +88,6 @@ application. Each object contains:
 - **chartGroup** section:
   - **name**: only one chart group per application.
   - **chart_names**: a list of the names of the charts from your application.
-
-> _NOTE_: TODO can't this be automated since it's just a copy from other values already set?
 
 ### Metadata File Configuration
 
