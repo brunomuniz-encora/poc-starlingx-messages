@@ -1,5 +1,3 @@
-TODO: move to the App Generator repo after validation of these changes.
-
 # Deploy an application as a StarlingX app
 
 This guide describes the steps to deploy an application as a **StarlingX App** 
@@ -116,7 +114,7 @@ which will help you fill them out for you application:
 
 - **metadata** section:
   - **author/author-email/url fields**: authorship information.
-  - **classifier** section: TODO needs description of what this is.
+  - **classifier** section: an array of additional information.
 
 This section is related to the `setup-cfg` file that will be generated. For
 more advanced use cases you may want to refer to [the documentation](https://setuptools.pypa.io/en/latest/userguide/declarative_config.html).
