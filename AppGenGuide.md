@@ -258,32 +258,34 @@ This means that, in order to be able to make additional configuration, one must:
 
 ### FluxCD Manifest
 
-[//]: # (TODO: Validate this information - what needs validation?)
+> _NOTE_: this section needs improvement.
 
 Most of the generated manifest won't need any modification, but for every 
-helm-chart in the `app_manifest.yaml`, a static overrides file will be created.
-The static overrides contain all information that is not to be overwritten
-inside the values.yaml of the helm-chart.
+Helm chart in the `app_manifest.yaml`, a static-overrides file will be created.
+The static-overrides file contains all information that is not to be
+overwritten inside the values.yaml of the Helm chart.
 
 ### Plugins
 
-The generate will create 3 main plugins, the helm, the kustomize and the lifecycle.
+The StarlingX App Generator will create 3 main plugins: the Helm,
+the kustomize and the lifecycle plugins.
 
 - The `helm/APP_NAME.py` file is responsible for the overriding methods that will
   be used to create the Helm overrides for the StarlingX App.
 
 - The `kustomize_APP_NAME.py` is a plugin that is used to make changes to the
-  top-level kustomization resource list based on the platform mode.
+  top-level `kustomization` resource list based on the platform mode.
 
 - The `lifecycle_APP_NAME.py` is responsible for performing lifecycle actions on the
   application using the lifecycle hooks of the StarlingX Platform.
 
-The files created by the generator will have empty implementations and is up to
-the developer to implement everything that is necessary for the application to
-run as intended.
+The files created by the generator will have an empty implementation and is up
+to the developer to implement everything that is necessary for the application
+to run as intended.
 
-The `sysinv` folder in the [StarlingX config repository](https://opendev.org/starlingx/config/src/branch/master/sysinv/sysinv/sysinv/sysinv) contains a multitude of functions and variables that may be
-helpful in the development of application plugins.
+The `sysinv` folder in the [StarlingX config repository](https://opendev.org/starlingx/config/src/branch/master/sysinv/sysinv/sysinv/sysinv)
+contains a multitude of functions and variables that may be helpful in the
+development of application plugins.
 
 ### Other files
 
