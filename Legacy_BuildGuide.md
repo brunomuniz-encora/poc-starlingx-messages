@@ -1,3 +1,5 @@
+> _NOTE_: This guide has been replaced and is here for historical purposes.
+
 # Deploy an application as a StarlingX app
 
 This guide describes the steps to deploy an application as a **StarlingX App**.

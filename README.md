@@ -9,7 +9,9 @@ This is a very basic app that act as either a `central` or a `node`:
 Take a look at the [Demo](Demo.md) (10-minutes reading).
 
 You can also understand how a StarlingX Application is packaged in the
-[BuildGuide](BuildGuide.md).
+[BuildGuide](Legacy_BuildGuide.md). There's also a more recent
+[StarlingX App Generator](https:/github.com/Danmcaires/StarlingX-App-Generator)
+if you want to package the app on a more automated fashion.
   
 ## Quick start
 
