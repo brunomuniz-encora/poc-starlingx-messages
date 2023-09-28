@@ -11,7 +11,6 @@ env:
     value: "8000"
 
 image:
-  repository: localhost:5000/poc-starlingx
   tag: latest
   containerPort: 8000
 
