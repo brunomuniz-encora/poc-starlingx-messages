@@ -1,0 +1,38 @@
+name: Publish Helm Package
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  HELM_EXPERIMENTAL_OCI: 1 #enable OCI support
+  HELM_VERSION_TO_INSTALL: latest # version of HELM to install
+  GCR_IMAGE: ghcr.io/${{ github.repository_owner }}/poc-starlingx-messages
+
+jobs:
+  build:
+    name: Publish to GCR
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout Repo
+
+      - name: Install Helm
+        uses: Azure/setup-helm@v1
+        with:
+          # Version of helm
+          version: ${{ env.HELM_VERSION_TO_INSTALL }} # default is latest
+
+      - name: Login to GCR using Helm
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.GCR_IMAGE }} --username ${{ github.repository_owner }} --password-stdin
+
+      - name: Save Helm chart to local registry
+        run: |
+          helm chart save ${{ github.workspace }}/helm-chart/ ${{ env.GCR_IMAGE }}:${{ github.sha }}
+
+      - name: Publish chart to GCR
+        run: |
+          helm chart push ${{ env.GCR_IMAGE }}:${{ github.sha }}
