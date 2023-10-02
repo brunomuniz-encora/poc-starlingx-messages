@@ -1,7 +1,29 @@
-# PoC-StarlingX Packaging and Demonstration
+# Deploying your application to StarlingX
 
-This is an application developed as a proof of concept for the StarlingX
-Platform.
+Deploying your own application to StarlingX is as easy as any other Kubernetes
+deployment out there. In this blog post we'll show you the process with a 
+simple demonstration application.
+
+It's important to understand an application can be deployed in many ways to
+the Kubernetes cluster(s) that StarlingX manages:
+
+- [raw Kubernetes](https://kubernetes.io/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/);
+- [Helm](https://helm.sh/docs/intro/using_helm/#helm-install-installing-a-package);
+- [Flux](https://fluxcd.io/); and finally
+- StarlingX Application, which benefits from tight integration with the
+  [StarlingX system](https://opendev.org/starlingx/config).
+
+> _NOTE_: TODO Saying that Helm is the most popular package manager needs a reference/link.
+
+In this particular demonstration we will focus on [Helm](https://helm.sh/),
+which is the most popular package manager for Kubernetes. Future blog posts
+will address other deployment types and their advantages.
+
+Any developer that already packages their application with
+[Helm](https://helm.sh/) will be able to deploy their application in
+StarlingX without any hassle.
+
+## The Demo App
 
 The application simulates a network of antivirus scanners and threat-monitoring
 running independently and geographically distributed called `nodes`. When a node
@@ -17,16 +39,18 @@ example, local networks.
 - `Central` is a deployment that receives messages from `nodes`, processing and
 presenting data related to them.
 
-## How to deploy your workload
+It's also possible to configure the threshold of a `node`, which determines
+their sensitivity in the scanner for threats.
 
-We opted to deploy this proof of concept as a StarlingX Application. It's
-important to understand that any user workload can be deployed in many ways to
-the Kubernetes cluster(s) that StarlingX manages:
+## Deploying the Demo App
 
-- with the most common Kubernetes package manager, [Helm](https://helm.sh/);
-- with [Flux](https://fluxcd.io/), to enjoy all the benefits that come with it; and finally
-- as a StarlingX Application, which benefits from tight integration with the
-[StarlingX system](https://opendev.org/starlingx/config).
+### Via a Helm Package
+
+> _NOTE_: TODO this is a WIP section
+
+### Via a Helm Repository
+
+> _NOTE_: TODO this is a WIP section
 
 ## Deploying PoC-StarlingX as a StarlingX App
 
