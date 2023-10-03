@@ -4,8 +4,8 @@ Deploying your own application to StarlingX is as easy as any other Kubernetes
 deployment out there. In this blog post we'll show you the process with a
 simple demonstration application.
 
-It's important to understand an application can be deployed in many ways to
-the Kubernetes cluster(s) that StarlingX manages:
+It's important to understand that an application can be deployed in many ways
+to the Kubernetes cluster(s) that StarlingX manages:
 
 - [raw Kubernetes](https://kubernetes.io/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/);
 - [Helm](https://helm.sh/docs/intro/using_helm/#helm-install-installing-a-package);
@@ -54,7 +54,7 @@ use the [Helm CLI](needs-reference) to install the package.
 #### Package the Helm chart
 
 ```shell
-git checkout https://github.com/bmuniz-daitan/poc-starlingx-messages.git
+git clone https://github.com/bmuniz-daitan/poc-starlingx-messages.git
 cd poc-starlingx-messages
 helm package helm-chart/
 ```
@@ -63,7 +63,7 @@ The above commands should create a `poc-starlingx-<version>.tgz` file.
 
 ```shell
 ...
-Successfully packaged chart and saved it to: .../PoC-StarlingX/poc-starlingx-1.5.2.tgz
+Successfully packaged chart and saved it to: .../poc-starlingx-messages/poc-starlingx-1.5.2.tgz
 ```
 
 #### Install the Helm package directly on StarlingX
