@@ -232,13 +232,3 @@ The `central` takes its time processing the recent burst of data and:
 
 - updates its first graph to reflect the new data received by the `node`s;
 - shows a spike of events received on the second graph.
-
-## The whole process
-
-Installing StarlingX (automated script):
-
-[![Complete install](README/install_thumb.png)](https://www.youtube.com/watch?v=6z7EV17Emcw)
-
-Deploying and demonstration:
-
-[![Complete install](README/demo_thumb.png)](https://youtu.be/IvBomQANXlo)
