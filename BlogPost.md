@@ -167,7 +167,70 @@ poc-starlingx-messages-central  default         1               2023-10-02 23:45
 
 ### Via a Helm Repository
 
-> _NOTE_: TODO this is a WIP section
+Of course, you can make it even easier by using a
+[Helm charts repository](https://helm.sh/docs/helm/helm_repo/). The Kubernetes
+Dashboard, for example, is distributed under a public chart repository that you
+can add to StarlingX:
+
+```shell
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+```
+
+And then use it to install the Kubernetes Dashboard:
+
+```shell
+cat <<EOF >dashboard-values.yaml
+service:
+  type: NodePort
+  nodePort: 32000
+
+rbac:
+  create: true
+  clusterAdminRole: true
+
+serviceAccount:
+  create: true
+  name: kubernetes-dashboard
+
+EOF
+helm install kubernetes-dashboard \
+ kubernetes-dashboard/kubernetes-dashboard \
+ -f dashboard-values.yaml \
+ --version 6.0.8
+```
+
+This is what our cluster looks like after everything that we covered on this
+blog post:
+
+```shell
+sysadmin@controller-0:~$ kubectl get all
+NAME                                         READY   STATUS    RESTARTS   AGE
+pod/kubernetes-dashboard-d4df5796b-km2jh     1/1     Running   0          6h43m
+pod/poc-starlingx-7775bb7864-sf544           1/1     Running   0          46m
+pod/poc-starlingx-central-5588f46ccb-2s8g2   1/1     Running   0          100m
+
+NAME                            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/kubernetes              ClusterIP   10.96.0.1       <none>        443/TCP          7h16m
+service/kubernetes-dashboard    NodePort    10.111.41.251   <none>        443:32000/TCP    6h43m
+service/poc-starlingx           NodePort    10.97.156.62    <none>        8100:31234/TCP   5h32m
+service/poc-starlingx-central   NodePort    10.103.215.65   <none>        8100:32767/TCP   100m
+
+NAME                                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/kubernetes-dashboard    1/1     1            1           6h43m
+deployment.apps/poc-starlingx           1/1     1            1           5h32m
+deployment.apps/poc-starlingx-central   1/1     1            1           100m
+
+NAME                                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubernetes-dashboard-d4df5796b     1         1         1       6h43m
+replicaset.apps/poc-starlingx-7775bb7864           1         1         1       46m
+replicaset.apps/poc-starlingx-central-5588f46ccb   1         1         1       100m
+```
+
+These instructions are based on the Kubernetes Dashboard [official
+installation guide](https://github.com/kubernetes/dashboard?tab=readme-ov-file#installation)
+. Our [automated virtual installation](https://docs.starlingx.io/deploy_install_guides/release/virtual/automated_install.html#dashboards)
+automatically installs and sets up the Kubernetes Dashboard for you. The
+procedure is also covered on our [bare metal installation guides](https://docs.starlingx.io/deploy_install_guides/release/kubernetes_access.html#gui).
 
 ## Application Demo and Information
 
