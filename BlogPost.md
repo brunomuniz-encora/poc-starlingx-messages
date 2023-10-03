@@ -5,7 +5,8 @@ deployment out there. In this blog post we'll show you the process with a
 simple demonstration application.
 
 It's important to understand that an application can be deployed in many ways
-to the Kubernetes cluster(s) that StarlingX manages:
+to the [Kubernetes cluster(s) that StarlingX manages](https://docs.starlingx.io/operations/k8s_cluster.html)
+:
 
 - [raw Kubernetes](https://kubernetes.io/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/);
 - [Helm](https://helm.sh/docs/intro/using_helm/#helm-install-installing-a-package);
@@ -13,34 +14,21 @@ to the Kubernetes cluster(s) that StarlingX manages:
 - StarlingX Application, which benefits from tight integration with the
   [StarlingX system](https://opendev.org/starlingx/config).
 
-> _NOTE_: TODO Saying that Helm is the most popular package manager needs a reference/link.
-
 In this particular demonstration we will focus on [Helm](https://helm.sh/),
 which is the most popular package manager for Kubernetes. Future blog posts
 will address other deployment types and their advantages.
 
 Any developer that already packages their application with
 [Helm](https://helm.sh/) will be able to deploy their application in
-StarlingX without any hassle.
+StarlingX without additional hassle.
 
 ## The Demo App
 
-The application simulates a network of antivirus scanners and threat-monitoring
-running independently and geographically distributed called `nodes`. When a node
-detects threats above a configurable threshold in an area it reports to a
-`central` instance responsible for aggregating, processing, and storing data
-from all the `nodes` while presenting a bird's-eye view in a simple dashboard.
+We will use a simple demonstration application for this blog post. We won't
+dive into the use case of the demonstration application, but there will be
+additional information about it at the end of the post.
 
-The application can act either as a `node` or a `central` (which are called
-"personalities") depending on the environment variables it has available.
-
-- `Nodes` are geographically spread out doing the actual work of monitoring, for
-  example, local networks.
-- `Central` is a deployment that receives messages from `nodes`, processing and
-  presenting data related to them.
-
-It's also possible to configure the threshold of a `node`, which determines
-their sensitivity in the scanner for threats.
+For now, let's focus on dealing with the deployment!
 
 ## Deploying the Demo App
 
@@ -181,11 +169,26 @@ poc-starlingx-messages-central  default         1               2023-10-02 23:45
 
 > _NOTE_: TODO this is a WIP section
 
-## Application Demo
+## Application Demo and Information
 
 > _TODO_: Should this section be included in the blog post?
 
-[//]: # (TODO this whole text needs proofreading)
+The application simulates a network of antivirus scanners and threat-monitoring
+running independently and geographically distributed called `nodes`. When a
+node detects threats above a configurable threshold in an area it reports to a
+`central` instance responsible for aggregating, processing, and storing data
+from all the `nodes` while presenting a bird's-eye view in a simple dashboard.
+
+The application can act either as a `node` or a `central` (which are called
+"personalities") depending on the environment variables it has available.
+
+- `Nodes` are geographically spread out doing the actual work of monitoring, for
+  example, local networks.
+- `Central` is a deployment that receives messages from `nodes`, processing and
+  presenting data related to them.
+
+It's also possible to configure the threshold of a `node`, which determines
+their sensitivity in the scanner for threats.
 
 Below you see a `central` running on the right side of the screen and 4
 `node`s running on the left side. `Node`s 1 and 2, on the top, are running with
