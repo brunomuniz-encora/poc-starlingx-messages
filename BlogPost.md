@@ -68,32 +68,113 @@ Successfully packaged chart and saved it to: .../poc-starlingx-messages/poc-star
 
 #### Install the Helm package directly on StarlingX
 
-Once you made the package available on a StarlingX instance, create an
-overrides file (this all should be familiar if you already use Helm packaging)
-. For the demonstration app that we're using, there are many options available
-, but we'll stick to the simplest version of the overrides:
+Once you made the package available on a StarlingX instance, the below command
+will deploy the application to the StarlingX-managed Kubernetes cluster:
 
 ```shell
-cat EOF >> poc-starlingx-messages.yml
+sysadmin@controller-0:~$ source /etc/platform/openrc; helm install poc-starlingx-messages-node poc-starlingx-1.5.2.tgz
+NAME: poc-starlingx-messages
+LAST DEPLOYED: <date>
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+[sysadmin@controller-0 ~(keystone_admin)]$ 
+```
+
+The demonstration app is conveniently setup with sensible defaults so there's
+no need for additional configuration in order to get a running application,
+as we can see from the `kubectl get all` output below:
+
+```shell
+[sysadmin@controller-0 ~(keystone_admin)]$ kubectl get all
+NAME                                       READY   STATUS    RESTARTS   AGE
+pod/poc-starlingx-85d766894b-dmw4v         1/1     Running   0          40s
+
+NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/poc-starlingx          NodePort    10.97.156.62    <none>        8100:31234/TCP   40s
+
+NAME                                   READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/poc-starlingx          1/1     1            1           40s
+
+NAME                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/poc-starlingx-85d766894b         1         1         1       40s
+```
+
+You can also use `helm list` and other Helm commands to check the status of
+your application deployment:
+
+```shell
+[sysadmin@controller-0 ~(keystone_admin)]$ helm list
+NAME                    NAMESPACE       REVISION        UPDATED         STATUS     CHART                            APP VERSION
+poc-starlingx-messages  default         1               <date> <time>   deployed   poc-starlingx-1.5.2              1.5.2
+[sysadmin@controller-0 ~(keystone_admin)]$
+```
+
+#### Set application configuration via Helm 
+
+Of course, your application might (and should) [be configurable through the
+environment](https://12factor.net/config) where it is running. The
+demonstration application is no different and exposes several configurations
+via [Helm values](https://helm.sh/docs/chart_best_practices/values/).
+
+Let's create a user-supplied values file that will override a few default
+values to deploy another instance of our application that will act as a
+`central`:
+
+```shell
+cat <<EOF > central-overrides.yml
 env:
+  # Set application to act as a `central`
   - name: MODE
     value: central
+
+kube:
+  # Set the NodePort to be configured within the Kubernetes Service resource
+  port: 32767
+  # Set a different name for the Kubernetes resources (helper to allow multiple instances run in the same cluster)
+  name: poc-starlingx-central
+
 EOF
 ```
 
-Now proceed to installing the Helm package:
+And now let's use this overrides file to deploy a new version of the
+application:
 
 ```shell
-helm install poc-starlingx-messages -f poc-starlingx-message.yml
+[sysadmin@controller-0 ~(keystone_admin)]$ helm install -f central-overrides.yml poc-starlingx-messages-central poc-starlingx-1.5.2.tgz
+NAME: poc-starlingx-messages-central
+LAST DEPLOYED: Mon Oct  2 23:45:23 2023
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
 ```
 
-#### You're done!
-
-You can see the resources deployed by Helm with the well-known `kubectl`
-commands:
+Again, the app is readily available in the Kubernetes cluster:
 
 ```shell
-kubectl get pods -A
+[sysadmin@controller-0 ~(keystone_admin)]$ kubectl get all
+NAME                                         READY   STATUS    RESTARTS   AGE
+pod/poc-starlingx-85d766894b-dmw4v           1/1     Running   0          3h51m
+pod/poc-starlingx-central-5588f46ccb-2s8g2   1/1     Running   0          38s
+
+NAME                            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/poc-starlingx           NodePort    10.97.156.62    <none>        8100:31234/TCP   3h51m
+service/poc-starlingx-central   NodePort    10.103.215.65   <none>        8100:32767/TCP   38s
+
+NAME                                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/poc-starlingx           1/1     1            1           3h51m
+deployment.apps/poc-starlingx-central   1/1     1            1           38s
+
+NAME                                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/poc-starlingx-85d766894b           1         1         1       3h51m
+replicaset.apps/poc-starlingx-central-5588f46ccb   1         1         1       38s
+
+[sysadmin@controller-0 ~(keystone_admin)]$ helm list
+NAME                            NAMESPACE       REVISION        UPDATED                                 STATUS   CHART                           APP VERSION
+poc-starlingx-messages          default         1               2023-10-02 19:54:09.609324422 +0000 UTC deployed poc-starlingx-1.5.2             1.5.2
+poc-starlingx-messages-central  default         1               2023-10-02 23:45:23.724816272 +0000 UTC deployed poc-starlingx-1.5.2             1.5.2
 ```
 
 ### Via a Helm Repository
