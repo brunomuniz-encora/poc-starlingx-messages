@@ -228,9 +228,9 @@ replicaset.apps/poc-starlingx-central-5588f46ccb   1         1         1       1
 
 These instructions are based on the Kubernetes Dashboard [official
 installation guide](https://github.com/kubernetes/dashboard?tab=readme-ov-file#installation)
-. Our [automated virtual installation](https://docs.starlingx.io/deploy_install_guides/release/virtual/automated_install.html#dashboards)
-automatically installs and sets up the Kubernetes Dashboard for you. The
-procedure is also covered on our [bare metal installation guides](https://docs.starlingx.io/deploy_install_guides/release/kubernetes_access.html#gui).
+. The [automated virtual installation](https://docs.starlingx.io/deploy_install_guides/release/virtual/automated_install.html#dashboards)
+installs and sets up the Kubernetes Dashboard for you. The procedure is also
+covered on the [bare metal installation guides](https://docs.starlingx.io/deploy_install_guides/release/kubernetes_access.html#gui).
 
 ## Application Demo and Information
 
