@@ -37,7 +37,7 @@ For now, let's focus on dealing with the deployment!
 > _TODO_:  this is a WIP section. Similar to https://docs.starlingx.io/deploy_install_guides/release/kubernetes_access.html#id3
 
 You can simply use the packaged Helm chart from your own source code, and
-use the [Helm CLI](needs-reference) to install the package.
+use the [Helm CLI](https://helm.sh/docs/intro/install/) to install the package.
 
 #### Package the Helm chart
 
