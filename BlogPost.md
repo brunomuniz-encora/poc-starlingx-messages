@@ -18,6 +18,9 @@ In this particular demonstration we will focus on [Helm](https://helm.sh/),
 which is the most popular package manager for Kubernetes. Future blog posts
 will address other deployment types and their advantages.
 
+We will use a virtual All-In-One Simplex (AIO-SX) setup of StarlingX. If you
+want to follow along, you can install your own with [this guide](https://docs.starlingx.io/deploy_install_guides/release/virtual/automated_install.html#dashboards).
+
 Any developer that already packages their application with
 [Helm](https://helm.sh/) will be able to deploy their application in
 StarlingX without additional hassle.
@@ -33,8 +36,6 @@ For now, let's focus on dealing with the deployment!
 ## Deploying the Demo App
 
 ### Via a Helm Package file
-
-> _TODO_:  this is a WIP section. Similar to https://docs.starlingx.io/deploy_install_guides/release/kubernetes_access.html#id3
 
 You can simply use the packaged Helm chart from your own source code, and
 use the [Helm CLI](https://helm.sh/docs/intro/install/) to install the package.
@@ -232,9 +233,13 @@ installation guide](https://github.com/kubernetes/dashboard?tab=readme-ov-file#i
 installs and sets up the Kubernetes Dashboard for you. The procedure is also
 covered on the [bare metal installation guides](https://docs.starlingx.io/deploy_install_guides/release/kubernetes_access.html#gui).
 
-## Application Demo and Information
+## Conclusion
 
-> _TODO_: Should this section be included in the blog post?
+In less than 5 minutes you learned how easy it is to deploy your existing
+Helm-packaged application to StarlingX. No surprises there! We will talk about
+Flux and StarlingX App on the next installments of this series.
+
+## Appendix - Application Demo and Information
 
 The application simulates a network of antivirus scanners and threat-monitoring
 running independently and geographically distributed called `nodes`. When a
