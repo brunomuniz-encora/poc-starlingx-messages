@@ -60,7 +60,7 @@ Once you made the package available on a StarlingX instance, the below command
 will deploy the application to the StarlingX-managed Kubernetes cluster:
 
 ```shell
-sysadmin@controller-0:~$ source /etc/platform/openrc; helm install poc-starlingx-messages-node poc-starlingx-1.5.2.tgz
+sysadmin@controller-0:~$ helm install poc-starlingx-messages-node poc-starlingx-1.5.2.tgz
 NAME: poc-starlingx-messages
 LAST DEPLOYED: <date>
 NAMESPACE: default
@@ -75,7 +75,7 @@ no need for additional configuration in order to get a running application,
 as we can see from the `kubectl get all` output below:
 
 ```shell
-[sysadmin@controller-0 ~(keystone_admin)]$ kubectl get all
+sysadmin@controller-0:~$ kubectl get all
 NAME                                       READY   STATUS    RESTARTS   AGE
 pod/poc-starlingx-85d766894b-dmw4v         1/1     Running   0          40s
 
@@ -93,7 +93,7 @@ You can also use `helm list` and other Helm commands to check the status of
 your application deployment:
 
 ```shell
-[sysadmin@controller-0 ~(keystone_admin)]$ helm list
+sysadmin@controller-0:~$ helm list
 NAME                    NAMESPACE       REVISION        UPDATED         STATUS     CHART                            APP VERSION
 poc-starlingx-messages  default         1               <date> <time>   deployed   poc-starlingx-1.5.2              1.5.2
 [sysadmin@controller-0 ~(keystone_admin)]$
@@ -142,7 +142,7 @@ TEST SUITE: None
 Again, the app is readily available in the Kubernetes cluster:
 
 ```shell
-[sysadmin@controller-0 ~(keystone_admin)]$ kubectl get all
+sysadmin@controller-0:~$ kubectl get all
 NAME                                         READY   STATUS    RESTARTS   AGE
 pod/poc-starlingx-85d766894b-dmw4v           1/1     Running   0          3h51m
 pod/poc-starlingx-central-5588f46ccb-2s8g2   1/1     Running   0          38s
