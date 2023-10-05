@@ -63,7 +63,7 @@ will deploy the application to the StarlingX-managed Kubernetes cluster:
 ```shell
 sysadmin@controller-0:~$ helm install poc-starlingx-messages-node poc-starlingx-1.5.2.tgz
 NAME: poc-starlingx-messages
-LAST DEPLOYED: <date>
+LAST DEPLOYED: <date> <time>
 NAMESPACE: default
 STATUS: deployed
 REVISION: 1
@@ -133,7 +133,7 @@ application:
 ```shell
 [sysadmin@controller-0 ~(keystone_admin)]$ helm install -f central-overrides.yml poc-starlingx-messages-central poc-starlingx-1.5.2.tgz
 NAME: poc-starlingx-messages-central
-LAST DEPLOYED: Mon Oct  2 23:45:23 2023
+LAST DEPLOYED: <date> <time>
 NAMESPACE: default
 STATUS: deployed
 REVISION: 1
@@ -200,6 +200,14 @@ helm install kubernetes-dashboard \
  --version 6.0.8
 ```
 
+These instructions are based on the Kubernetes Dashboard [official
+installation guide](https://github.com/kubernetes/dashboard?tab=readme-ov-file#installation)
+. The [automated virtual installation](https://docs.starlingx.io/deploy_install_guides/release/virtual/automated_install.html#dashboards)
+installs and sets up the Kubernetes Dashboard for you. The procedure is also
+covered on the [bare metal installation guides](https://docs.starlingx.io/deploy_install_guides/release/kubernetes_access.html#gui).
+
+## Conclusion
+
 This is what our cluster looks like after everything that we covered on this
 blog post:
 
@@ -227,17 +235,9 @@ replicaset.apps/poc-starlingx-7775bb7864           1         1         1       4
 replicaset.apps/poc-starlingx-central-5588f46ccb   1         1         1       100m
 ```
 
-These instructions are based on the Kubernetes Dashboard [official
-installation guide](https://github.com/kubernetes/dashboard?tab=readme-ov-file#installation)
-. The [automated virtual installation](https://docs.starlingx.io/deploy_install_guides/release/virtual/automated_install.html#dashboards)
-installs and sets up the Kubernetes Dashboard for you. The procedure is also
-covered on the [bare metal installation guides](https://docs.starlingx.io/deploy_install_guides/release/kubernetes_access.html#gui).
-
-## Conclusion
-
 In less than 5 minutes you learned how easy it is to deploy your existing
 Helm-packaged application to StarlingX. No surprises there! We will talk about
-Flux and StarlingX App on the next installments of this series.
+Flux and StarlingX Apps on the next installments of this series.
 
 ## Appendix - Application Demo and Information
 
