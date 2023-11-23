@@ -1,6 +1,6 @@
 # The very simple PoC of an app that sends message to another app
 
-This is a very basic app that act as either a `central` or a `node`:
+This is a very basic app that acts as either a `central` or a `node`:
 
 - `central`: receives messages; plots received messages and clients connected.
 - `node`: generates random data (threats); sends a message to a `central` when
